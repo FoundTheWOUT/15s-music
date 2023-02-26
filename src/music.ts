@@ -1,11 +1,14 @@
 let audio: HTMLAudioElement | null = null;
-export const playMusic = (blob: Blob) => {
+export const playMusic = (blob: Blob): Promise<HTMLAudioElement | null> => {
   if (!audio) {
     audio = new Audio();
     audio.loop = true;
   }
   audio.src = URL.createObjectURL(blob);
-  return audio.play();
+  return new Promise(async (res, rej) => {
+    await audio?.play().catch(rej);
+    res(audio);
+  });
 };
 
 export type Music = {
@@ -26,6 +29,7 @@ export const musics: Music[] = [
     image: {
       url: "/Even LA.png",
     },
+    song_15s_src: "/Even-LA.wav",
   },
   {
     name: "失恋ソング沢山聴いて 泣いてばかりの私はもう。",

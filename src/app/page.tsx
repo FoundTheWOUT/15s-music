@@ -2,14 +2,14 @@
 // import { Inter } from "next/font/google";
 import { useState } from "react";
 import Music15sPlayer from "./components/Music15sPlayer";
-import { musics } from "./music";
+import { musics } from "../music";
 import { Switch } from "@headlessui/react";
 import cn from "classnames";
 
 // const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
 
   return (
     <main className="mx-auto max-w-7xl">
