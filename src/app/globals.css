@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .icon {
+    @apply w-10 cursor-pointer rounded-full bg-white p-1;
+  }
+}

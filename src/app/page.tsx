@@ -1,15 +1,22 @@
-"use client"; // optimize
 // import { Inter } from "next/font/google";
-import { useState } from "react";
+import MusicList from "./components/MusicList";
+import AutoPlaySwitch from "./components/AutoPlaySwitch";
 import Music15sPlayer from "./components/Music15sPlayer";
-import { musics } from "../music";
-import { Switch } from "@headlessui/react";
-import cn from "classnames";
+import { Music } from "@/music";
+import { PAGE_SIZE } from "@/const";
 
 // const inter = Inter({ subsets: ["latin"] });
 
-export default function Home() {
-  const [autoPlay, setAutoPlay] = useState(true);
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { page: string | undefined };
+}) {
+  const { page = "0" } = searchParams;
+  const data: { total: number } = await fetch(
+    `http://127.0.0.1:3500/music/meta`,
+    { cache: "no-store" }
+  ).then((res) => res.json());
 
   return (
     <main className="mx-auto max-w-7xl">
@@ -18,49 +25,38 @@ export default function Home() {
         <span className="bg-gradient-to-r from-[#ec008c] to-[#fc6767] bg-clip-text text-3xl font-extrabold text-transparent ">
           15S Music
         </span>
-        <Switch.Group>
-          <div className="inline-flex items-center gap-1">
-            <Switch.Label>自动播放</Switch.Label>
-            <Switch
-              checked={autoPlay}
-              onChange={setAutoPlay}
-              className={cn(
-                autoPlay ? "bg-[#ec008c]" : "bg-[#fc6767]",
-                "relative inline-flex h-[20px] w-[40px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2  focus-visible:ring-white focus-visible:ring-opacity-75"
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={cn(
-                  autoPlay ? "translate-x-5" : "translate-x-0",
-                  "pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
-                )}
-              />
-            </Switch>
-          </div>
-        </Switch.Group>
+        <AutoPlaySwitch />
       </header>
       {/* music list */}
-      <div className="mx-auto grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6">
-        {musics.map((music, idx) => {
-          return (
-            <div key={idx} className="flex flex-col gap-2">
-              <Music15sPlayer music={music} autoPlay={autoPlay} />
-
-              <div>
-                <div className="truncate font-bold" title={music.name}>
-                  {music.name}
-                </div>
-                <div className="truncate text-xs text-gray-500">
-                  {Array.isArray(music.authors)
-                    ? music.authors.join("/")
-                    : music.authors}
-                </div>
-              </div>
-            </div>
-          );
+      <MusicList total={data.total}>
+        {[...Array(parseInt(page) + 1)].map((_, idx) => {
+          // @ts-ignore
+          return <Page key={idx} page={idx} />;
         })}
-      </div>
+      </MusicList>
     </main>
   );
+}
+
+async function Page({ page }: { page: number }) {
+  const data: { musics: Music[] } = await fetch(
+    `http://127.0.0.1:3500/music?page=${page}&limit=${PAGE_SIZE}`
+  ).then((res) => res.json());
+
+  return data.musics.map((music, idx) => {
+    return (
+      <div key={idx} className="flex flex-col gap-2">
+        <Music15sPlayer music={music} />
+
+        <div>
+          <div className="truncate font-bold" title={music.name}>
+            {music.name}
+          </div>
+          <div className="truncate text-xs text-gray-500">
+            {music.authors.join("/")}
+          </div>
+        </div>
+      </div>
+    );
+  });
 }
