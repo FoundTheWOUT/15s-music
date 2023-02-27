@@ -1,6 +1,5 @@
 // import { Inter } from "next/font/google";
 import MusicList from "./components/MusicList";
-import AutoPlaySwitch from "./components/AutoPlaySwitch";
 import Music15sPlayer from "./components/Music15sPlayer";
 import { Music } from "@/music";
 import { PAGE_SIZE } from "@/const";
@@ -19,22 +18,12 @@ export default async function Home({
   ).then((res) => res.json());
 
   return (
-    <main className="mx-auto max-w-7xl">
-      {/* header */}
-      <header className="sticky top-2 z-50 my-2 flex justify-between rounded-xl p-2 backdrop-blur">
-        <span className="bg-gradient-to-r from-[#ec008c] to-[#fc6767] bg-clip-text text-3xl font-extrabold text-transparent ">
-          15S Music
-        </span>
-        <AutoPlaySwitch />
-      </header>
-      {/* music list */}
-      <MusicList total={data.total}>
-        {[...Array(parseInt(page) + 1)].map((_, idx) => {
-          // @ts-ignore
-          return <Page key={idx} page={idx} />;
-        })}
-      </MusicList>
-    </main>
+    <MusicList total={data.total}>
+      {[...Array(parseInt(page) + 1)].map((_, idx) => {
+        // @ts-ignore
+        return <Page key={idx} page={idx} />;
+      })}
+    </MusicList>
   );
 }
 

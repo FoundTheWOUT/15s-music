@@ -13,9 +13,13 @@ import { playEvent } from "./MusicList";
 function Music15sPlayer({ music }: { music: Music }) {
   const { trigger } = useSWRMutation(music.song_15s_src, () =>
     music.song_15s_src
-      ? fetch(`http://localhost:3500${music.song_15s_src}`).then((res) =>
-          res.arrayBuffer()
-        )
+      ? music.song_15s_src.startsWith("/")
+        ? fetch(`http://localhost:3500${music.song_15s_src}`).then((res) =>
+            res.arrayBuffer()
+          )
+        : fetch(`http://localhost:3500/15s/${music.song_15s_src}`).then((res) =>
+            res.arrayBuffer()
+          )
       : null
   );
   const [autoPlay] = useAtom(autoPlayAtom);
@@ -116,7 +120,7 @@ function Music15sPlayer({ music }: { music: Music }) {
       <Image
         className="transition-[filter] group-hover/music:blur"
         src={
-          music.image_url ??
+          music.cover_src ??
           "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         } // TODO: replace default
         fill
