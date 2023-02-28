@@ -174,18 +174,19 @@ function AddMusic() {
         >
           <Button>封面</Button>
         </Upload>
-        <button
-          className="w-12 border"
-          onClick={() => {
-            setMusics((musics) => [
-              ...musics,
-              { ...musicInput, nanoId: nanoid() },
-            ]);
-            setMusicInput(musicInputAtom.init);
-          }}
-        >
-          +
-        </button>
+        {musics.length < 20 && (
+          <Button
+            onClick={() => {
+              setMusics((musics) => [
+                ...musics,
+                { ...musicInput, nanoId: nanoid() },
+              ]);
+              setMusicInput(musicInputAtom.init);
+            }}
+          >
+            +
+          </Button>
+        )}
       </div>
       <Button onClick={handleSubmit} disabled={!musics.length}>
         提交
