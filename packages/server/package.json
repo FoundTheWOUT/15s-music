@@ -1,6 +1,7 @@
 {
   "name": "@15s-music/server",
   "scripts": {
+    "build": "tsc",
     "watch": "tsc -w",
     "dev": "nodemon -w dist dist/index.js"
   },

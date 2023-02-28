@@ -9,7 +9,7 @@ declare global {
       DatabaseUser: string;
       DatabasePW: string | undefined;
       DatabaseHost: string;
-      DatabasePort: number;
+      DatabasePort: string;
     }
   }
 }

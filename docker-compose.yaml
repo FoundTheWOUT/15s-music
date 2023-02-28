@@ -1,0 +1,25 @@
+version: "3.1"
+services:
+  server:
+    build: .
+    depends_on:
+      - db
+    # we didn't copy env file into the image, but inject from this field
+    env_file: .env
+    ports:
+      - "3500:3500"
+  db:
+    # https://stackoverflow.com/questions/62518965/failed-to-read-environment-variables-from-the-file-declared-in-env-file/62519283#62519283
+    # env_file:
+    #   - .env.prod
+    image: postgres
+    restart: always
+    volumes:
+      - 15s-music-db:/data/db
+    environment:
+      - POSTGRES_PASSWORD=${DatabasePW}
+      - POSTGRES_DB=${DatabaseName}
+    ports:
+      - "5432:5432"
+volumes:
+  15s-music-db:

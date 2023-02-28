@@ -7,7 +7,7 @@ export const createAppDataSource = () => {
   return new DataSource({
     type: "postgres",
     host: DatabaseHost,
-    port: DatabasePort,
+    port: parseInt(DatabasePort),
     username: DatabaseUser,
     password: DatabasePW ?? "",
     database: DatabaseName,

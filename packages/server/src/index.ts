@@ -7,11 +7,15 @@ import cors from "cors";
 import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
-import { rmSync } from "fs";
+import { accessSync, rmSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
 
-const ENV = process.env.ENVIRONMENT ?? "dev";
-dotenv.config({ path: resolve(process.cwd(), `.env.${ENV}`) });
+const ENV = process.env.ENVIRONMENT === "prod" ? "" : "dev";
+console.log("cwd:", process.cwd());
+// dev load .env.dev, prod load .env
+const dotenvPath = resolve(process.cwd(), ENV.length ? `.env.${ENV}` : ".env");
+dotenv.config({ path: dotenvPath });
+console.log("I will connect to:", process.env.DatabaseHost);
 
 const upload = multer({ dest: "uploads/" });
 
