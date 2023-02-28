@@ -1,5 +1,5 @@
 import { createAppDataSource } from "./data-source";
-import express, { RequestHandler } from "express";
+import express from "express";
 import morgan from "morgan";
 import { Music } from "./entry/Music";
 import multer from "multer";
@@ -13,18 +13,6 @@ const ENV = process.env.ENVIRONMENT ?? "dev";
 dotenv.config({ path: resolve(process.cwd(), `.env.${ENV}`) });
 
 const upload = multer({ dest: "uploads/" });
-
-const ossProxy = (client: OSS): RequestHandler => {
-  return async (req, res) => {
-    const { src } = req.params;
-    try {
-      const res = await client.getStream(src);
-      res.stream.pipe(res);
-    } catch (error) {
-      return res.status(404).send(error);
-    }
-  };
-};
 
 const ossPutAndRemoveLocal = async (
   client: OSS,
@@ -133,10 +121,6 @@ async function bootstrap() {
         total,
       });
     });
-
-    // proxy
-    app.get("/15s/:src", ossProxy(ossClient));
-    app.get("/cover/:src", ossProxy(ossClient));
 
     app.listen(3500);
     console.log("start server at port 3500");

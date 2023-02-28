@@ -47,8 +47,10 @@ importers:
       '@15s-music/server': workspace:*
       '@headlessui/react': ^1.7.12
       '@heroicons/react': ^2.0.16
+      '@types/ali-oss': ^6.16.7
       '@types/react': 18.0.28
       '@types/react-dom': 18.0.11
+      ali-oss: ^6.17.1
       antd: ^5.2.3
       autoprefixer: ^10.4.13
       classnames: ^2.3.2
@@ -67,6 +69,7 @@ importers:
     dependencies:
       '@headlessui/react': 1.7.12_biqbaboplfbrettd7655fr4n2y
       '@heroicons/react': 2.0.16_react@18.2.0
+      ali-oss: 6.17.1
       antd: 5.2.3_biqbaboplfbrettd7655fr4n2y
       classnames: 2.3.2
       eslint: 8.34.0
@@ -80,6 +83,7 @@ importers:
       typescript: 4.9.5
     devDependencies:
       '@15s-music/server': link:../server
+      '@types/ali-oss': 6.16.7
       '@types/react': 18.0.28
       '@types/react-dom': 18.0.11
       autoprefixer: 10.4.13_postcss@8.4.21

@@ -17,7 +17,7 @@ function Music15sPlayer({ music }: { music: Music }) {
         ? fetch(`http://localhost:3500${music.song_15s_src}`).then((res) =>
             res.arrayBuffer()
           )
-        : fetch(`http://localhost:3500/15s/${music.song_15s_src}`).then((res) =>
+        : fetch(`/api/resource/${music.song_15s_src}`).then((res) =>
             res.arrayBuffer()
           )
       : null
@@ -119,8 +119,10 @@ function Music15sPlayer({ music }: { music: Music }) {
       <Image
         className="transition-[filter] group-hover/music:blur"
         src={
-          music.cover_src ??
-          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+          music.cover_src?.startsWith("/")
+            ? music.cover_src
+            : `/api/resource/${music.cover_src}` ??
+              "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         } // TODO: replace default
         fill
         sizes="(max-width: 768px) 100vw,
