@@ -7,8 +7,9 @@
     "experimentalDecorators": true,
     "target": "es5",
     "module": "commonjs",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "declaration": true
   },
   "include": ["./**/*.ts", "server-env.d.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }
