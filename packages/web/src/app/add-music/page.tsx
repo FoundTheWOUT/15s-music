@@ -6,6 +6,8 @@ import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Music } from "@/music";
+import { tokenAtom } from "@/state";
+import useSWR from "swr";
 
 type MusicInput = {
   nanoId: string;
@@ -26,6 +28,12 @@ const musicInputAtom = atom<MusicInput>({
 function AddMusic() {
   const [musics, setMusics] = useState<MusicInput[]>([]);
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
+  const [token, setToken] = useAtom(tokenAtom);
+  const [tokenInput, setTokenInput] = useState("");
+
+  const { data, mutate } = useSWR("authentication", () =>
+    fetch(`/api/authentication?token=${token}`).then((res) => res.json())
+  );
 
   const handleSubmit = async () => {
     if (!musics.length) return;
@@ -42,12 +50,12 @@ function AddMusic() {
 
     const [songFileMap, coverFileMap] = await Promise.all([
       // song
-      fetch("http://127.0.0.1:3500/upload/song", {
+      fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/song`, {
         method: "POST",
         body: songs,
       }).then((res) => res.json()),
       // cover
-      fetch("http://127.0.0.1:3500/upload", {
+      fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload`, {
         method: "POST",
         body: covers,
       }).then((res) => res.json()),
@@ -61,7 +69,7 @@ function AddMusic() {
       albums: music.albums ?? music.name,
     }));
 
-    fetch("http://127.0.0.1:3500/music", {
+    fetch(`${process.env.NEXT_PUBLIC_API_GATE}/music`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -74,6 +82,27 @@ function AddMusic() {
       console.log(res);
     });
   };
+
+  if (!data) return <div>loading</div>;
+
+  if (data.role !== "master") {
+    return (
+      <>
+        <Input
+          value={tokenInput}
+          onChange={(e) => setTokenInput(e.currentTarget.value)}
+        />
+        <Button
+          onClick={() => {
+            setToken(tokenInput);
+            mutate(tokenInput);
+          }}
+        >
+          Token
+        </Button>
+      </>
+    );
+  }
 
   return (
     <div>

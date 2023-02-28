@@ -14,9 +14,9 @@ function Music15sPlayer({ music }: { music: Music }) {
   const { trigger } = useSWRMutation(music.song_15s_src, () =>
     music.song_15s_src
       ? music.song_15s_src.startsWith("/")
-        ? fetch(`http://localhost:3500${music.song_15s_src}`).then((res) =>
-            res.arrayBuffer()
-          )
+        ? fetch(
+            `${process.env.NEXT_PUBLIC_API_GATE}${music.song_15s_src}`
+          ).then((res) => res.arrayBuffer())
         : fetch(`/api/resource/${music.song_15s_src}`).then((res) =>
             res.arrayBuffer()
           )
@@ -119,11 +119,12 @@ function Music15sPlayer({ music }: { music: Music }) {
       <Image
         className="transition-[filter] group-hover/music:blur"
         src={
-          music.cover_src?.startsWith("/")
-            ? music.cover_src
-            : `/api/resource/${music.cover_src}` ??
-              "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        } // TODO: replace default
+          music.cover_src
+            ? music.cover_src.startsWith("/")
+              ? music.cover_src
+              : `/api/resource/${music.cover_src}`
+            : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        }
         fill
         sizes="(max-width: 768px) 100vw,
         (max-width: 1200px) 50vw,

@@ -13,7 +13,7 @@ export default async function Home({
 }) {
   const { page = "0" } = searchParams;
   const data: { total: number } = await fetch(
-    `http://127.0.0.1:3500/music/meta`,
+    `${process.env.NEXT_PUBLIC_API_GATE}/music/meta`,
     { cache: "no-store" }
   ).then((res) => res.json());
 
@@ -29,7 +29,7 @@ export default async function Home({
 
 async function Page({ page }: { page: number }) {
   const data: { musics: Music[] } = await fetch(
-    `http://127.0.0.1:3500/music?page=${page}&limit=${PAGE_SIZE}`
+    `${process.env.NEXT_PUBLIC_API_GATE}/music?page=${page}&limit=${PAGE_SIZE}`
   ).then((res) => res.json());
 
   return data.musics.map((music, idx) => {

@@ -1,6 +1,5 @@
 import { atomWithStorage } from "jotai/utils";
 
-export const autoPlayAtom = atomWithStorage(
-  "@15s-music/store/auto-play",
-  false
-);
+export const autoPlayAtom = atomWithStorage("auto-play", false);
+
+export const tokenAtom = atomWithStorage("token", "");
