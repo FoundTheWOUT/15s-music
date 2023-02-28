@@ -72,6 +72,7 @@ function Music15sPlayer({ music }: { music: Music }) {
     }
   };
 
+  // TODO: optimize mouse flowing
   const handleMouseEnter = async () => {
     if (!music.song_15s_src) return;
     if (autoPlay) {
@@ -91,27 +92,19 @@ function Music15sPlayer({ music }: { music: Music }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="relative inset-0 z-10 flex h-full items-center justify-center gap-2">
+      <div className="relative inset-0 z-10 flex h-full items-center justify-center gap-4">
         {!autoPlay &&
           (paused ? (
             <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
               <PlayIcon
-                className="text-gray-500"
-                // className={cn(
-                //   "translate-y-[1px]",
-                //   liked ? "text-red-500" : "text-gray-500"
-                // )}
+                className="translate-x-[2px] text-gray-500"
                 onClick={() => playThis()}
               />
             </div>
           ) : (
             <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
               <PauseIcon
-                className="text-gray-500"
-                // className={cn(
-                //   "translate-y-[1px]",
-                //   liked ? "text-red-500" : "text-gray-500"
-                // )}
+                className=" text-gray-500"
                 onClick={() => {
                   playerRef.current?.pause();
                   setPaused(true);
@@ -136,7 +129,7 @@ function Music15sPlayer({ music }: { music: Music }) {
           music.cover_src
             ? music.cover_src.startsWith("/")
               ? music.cover_src
-              : `/api/resource/${music.cover_src}`
+              : `${process.env.NEXT_PUBLIC_OSS}/${music.cover_src}`
             : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         }
         fill

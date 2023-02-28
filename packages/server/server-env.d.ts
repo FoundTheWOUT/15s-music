@@ -10,6 +10,8 @@ declare global {
       DatabasePW: string | undefined;
       DatabaseHost: string;
       DatabasePort: string;
+      CORS_ORIGIN: string;
+      MASTER_TOKEN: string;
     }
   }
 }

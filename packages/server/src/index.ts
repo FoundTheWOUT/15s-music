@@ -7,15 +7,16 @@ import cors from "cors";
 import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
-import { accessSync, rmSync } from "fs";
+import { rmSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { isProd } from "./const";
+import { log } from "./utils";
+import { auth } from "./middlerware/authentication";
 
-const ENV = process.env.ENVIRONMENT === "prod" ? "" : "dev";
-console.log("cwd:", process.cwd());
+log("cwd:", process.cwd());
 // dev load .env.dev, prod load .env
-const dotenvPath = resolve(process.cwd(), ENV.length ? `.env.${ENV}` : ".env");
+const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
 dotenv.config({ path: dotenvPath });
-console.log("I will connect to:", process.env.DatabaseHost);
 
 const upload = multer({ dest: "uploads/" });
 
@@ -25,7 +26,17 @@ const ossPutAndRemoveLocal = async (
 ) => {
   try {
     await Promise.all(
-      files.map((file) => client.put(file.filename, resolve(file.path)))
+      files.map((file) => {
+        let extension = "";
+        switch (file.mimetype) {
+          case "":
+            break;
+
+          default:
+            break;
+        }
+        return client.put(file.filename, resolve(file.path));
+      })
     );
     files.forEach((file) => {
       rmSync(resolve(file.path));
@@ -42,7 +53,11 @@ const ossPutAndRemoveLocal = async (
 async function bootstrap() {
   try {
     const source = await createAppDataSource().initialize();
+
     const app = express();
+    const authRoute = express.Router();
+    authRoute.use(auth());
+
     const ossClient = new OSS({
       region: "oss-cn-guangzhou",
       accessKeyId: process.env.Ali_AccessKey_Id,
@@ -54,22 +69,41 @@ async function bootstrap() {
       .use(express.json())
       .use(express.urlencoded())
       .use(morgan("tiny"))
-      .use(cors())
       .use("/upload", express.static("uploads"));
 
-    app.post("/upload", upload.array("file", 20), async function (req, rep) {
-      if (!Array.isArray(req.files)) {
-        return rep.status(400).send("files is not array.");
-      }
-      try {
-        const fileMap = await ossPutAndRemoveLocal(ossClient, req.files);
-        return rep.send(fileMap);
-      } catch (error) {
-        return rep.status(500).send(error);
-      }
+    if (isProd) {
+      app.use(
+        cors({
+          origin: process.env.CORS_ORIGIN,
+        })
+      );
+    } else {
+      app.use(cors());
+    }
+
+    app.use(authRoute);
+
+    app.get("/ping", (req, rep) => {
+      return rep.end("pong");
     });
 
-    app.post(
+    authRoute.post(
+      "/upload",
+      upload.array("file", 20),
+      async function (req, rep) {
+        if (!Array.isArray(req.files)) {
+          return rep.status(400).send("files is not array.");
+        }
+        try {
+          const fileMap = await ossPutAndRemoveLocal(ossClient, req.files);
+          return rep.send(fileMap);
+        } catch (error) {
+          return rep.status(500).send(error);
+        }
+      }
+    );
+
+    authRoute.post(
       "/upload/song",
       upload.array("file", 20),
       async function (req, rep) {
@@ -86,7 +120,7 @@ async function bootstrap() {
       }
     );
 
-    app.post("/music", async function (req, rep) {
+    authRoute.post("/music", async function (req, rep) {
       const data = req.body as { musics: Music[] };
       const musicRepository = source.getRepository(Music);
       const musics = data.musics.map((music) =>

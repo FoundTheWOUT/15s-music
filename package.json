@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "pnpm -r dev"
+    "web": "pnpm --filter @15s-music/web",
+    "server": "pnpm --filter @15s-music/server"
   },
   "dependencies": {
     "nanoid": "^4.0.1",

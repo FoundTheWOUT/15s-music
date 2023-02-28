@@ -52,11 +52,17 @@ function AddMusic() {
       // song
       fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/song`, {
         method: "POST",
+        headers: {
+          authorization: `Basic ${token}`,
+        },
         body: songs,
       }).then((res) => res.json()),
       // cover
       fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload`, {
         method: "POST",
+        headers: {
+          authorization: `Basic ${token}`,
+        },
         body: covers,
       }).then((res) => res.json()),
     ]);
@@ -72,6 +78,7 @@ function AddMusic() {
     fetch(`${process.env.NEXT_PUBLIC_API_GATE}/music`, {
       method: "POST",
       headers: {
+        authorization: `Basic ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
