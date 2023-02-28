@@ -27,14 +27,6 @@ const ossPutAndRemoveLocal = async (
   try {
     await Promise.all(
       files.map((file) => {
-        let extension = "";
-        switch (file.mimetype) {
-          case "":
-            break;
-
-          default:
-            break;
-        }
         return client.put(file.filename, resolve(file.path));
       })
     );
