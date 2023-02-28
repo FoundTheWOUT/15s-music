@@ -10,6 +10,8 @@ export class Music {
   @PrimaryGeneratedColumn()
   id: number;
   @Column()
+  uuid: string;
+  @Column()
   name: string;
   @Column("text", { array: true })
   authors: string[];

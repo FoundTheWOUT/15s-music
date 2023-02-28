@@ -7,7 +7,7 @@ import { HeartIcon, PauseIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useRef, useState } from "react";
 import cn from "classnames";
 import { useAtom } from "jotai";
-import { autoPlayAtom } from "@/state";
+import { autoPlayAtom, likedSongAtom } from "@/state";
 import { playEvent } from "./MusicList";
 
 function Music15sPlayer({ music }: { music: Music }) {
@@ -24,7 +24,21 @@ function Music15sPlayer({ music }: { music: Music }) {
   );
   const [autoPlay] = useAtom(autoPlayAtom);
   const [paused, setPaused] = useState(true);
-  const [liked, setLiked] = useState(false);
+  const [likedSong, setLikedSong] = useAtom(likedSongAtom);
+  const liked = likedSong.includes(music.uuid);
+  const handleHeartClick = () => {
+    if (liked) {
+      setLikedSong((liked) => {
+        const nextLiked = [...liked];
+        const idx = nextLiked.indexOf(music.uuid);
+        nextLiked.splice(idx, 1);
+        return nextLiked;
+      });
+    } else {
+      setLikedSong((liked) => [...liked, music.uuid]);
+    }
+  };
+
   const playerRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -111,7 +125,7 @@ function Music15sPlayer({ music }: { music: Music }) {
               "translate-y-[1px]",
               liked ? "text-red-500" : "text-gray-500"
             )}
-            onClick={() => setLiked(!liked)}
+            onClick={handleHeartClick}
           />
         </div>
       </div>

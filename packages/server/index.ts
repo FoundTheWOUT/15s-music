@@ -8,6 +8,7 @@ import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
 import { rmSync } from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 const ENV = process.env.ENVIRONMENT ?? "dev";
 dotenv.config({ path: resolve(process.cwd(), `.env.${ENV}`) });
@@ -84,7 +85,9 @@ async function bootstrap() {
     app.post("/music", async function (req, rep) {
       const data = req.body as { musics: Music[] };
       const musicRepository = source.getRepository(Music);
-      const musics = data.musics.map((music) => musicRepository.create(music));
+      const musics = data.musics.map((music) =>
+        musicRepository.create({ ...music, uuid: uuidv4() })
+      );
       const res = source.getRepository(Music).save(musics);
       return rep.send(res);
     });
@@ -111,6 +114,7 @@ async function bootstrap() {
         .take(pageLimit)
         .skip(pageNum * pageLimit)
         .getMany();
+
       return rep.send({ total: await musicRepository.count(), musics });
     });
 

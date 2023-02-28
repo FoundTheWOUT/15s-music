@@ -18,6 +18,7 @@ importers:
       '@types/ali-oss': ^6.16.7
       '@types/express': ^4.17.17
       '@types/multer': ^1.4.7
+      '@types/uuid': ^9.0.1
       ali-oss: ^6.17.1
       cors: ^2.8.5
       dotenv: ^16.0.3
@@ -27,6 +28,7 @@ importers:
       nodemon: ^2.0.20
       pg: ^8.9.0
       typeorm: ^0.3.12
+      uuid: ^9.0.0
     dependencies:
       ali-oss: 6.17.1
       cors: 2.8.5
@@ -36,10 +38,12 @@ importers:
       multer: 1.4.5-lts.1
       pg: 8.9.0
       typeorm: 0.3.12_pg@8.9.0
+      uuid: 9.0.0
     devDependencies:
       '@types/ali-oss': 6.16.7
       '@types/express': 4.17.17
       '@types/multer': 1.4.7
+      '@types/uuid': 9.0.1
       nodemon: 2.0.20
 
   packages/web:
@@ -555,6 +559,10 @@ packages:
     dependencies:
       '@types/mime': 3.0.1
       '@types/node': 18.14.1
+    dev: true
+
+  /@types/uuid/9.0.1:
+    resolution: {integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==}
     dev: true
 
   /@typescript-eslint/parser/5.53.0_7kw3g6rralp5ps6mg3uyzz6azm:
