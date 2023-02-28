@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Select, Input, Button, Upload, UploadFile } from "antd";
+import { Select, Input, Button, Upload } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Music } from "@/music";
-// import { Music } from "@/music";
 
 type MusicInput = {
   nanoId: string;
@@ -29,21 +28,21 @@ function AddMusic() {
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
 
   const handleSubmit = async () => {
+    if (!musics.length) return;
     const songs = new FormData();
     const covers = new FormData();
-    musics.forEach((music) => {
-      console.log(music.file, music.cover);
-      if (music.file) {
-        songs.append("file", new File([music.file], music.nanoId));
+    for (const music of musics) {
+      if (!music.file || !music.cover) {
+        console.log("must file/cover");
+        return;
       }
-      if (music.cover) {
-        covers.append("file", new File([music.cover], music.nanoId));
-      }
-    });
+      songs.append("file", new File([music.file], music.nanoId));
+      covers.append("file", new File([music.cover], music.nanoId));
+    }
 
     const [songFileMap, coverFileMap] = await Promise.all([
       // song
-      fetch("http://127.0.0.1:3500/upload", {
+      fetch("http://127.0.0.1:3500/upload/song", {
         method: "POST",
         body: songs,
       }).then((res) => res.json()),
@@ -71,6 +70,7 @@ function AddMusic() {
         musics: musicsSchema,
       }),
     }).then((res) => {
+      setMusics([]);
       console.log(res);
     });
   };
@@ -158,7 +158,9 @@ function AddMusic() {
           +
         </button>
       </div>
-      <Button onClick={handleSubmit}>提交</Button>
+      <Button onClick={handleSubmit} disabled={!musics.length}>
+        提交
+      </Button>
     </div>
   );
 }

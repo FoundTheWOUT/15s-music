@@ -60,7 +60,6 @@ function Music15sPlayer({ music }: { music: Music }) {
 
   const handleMouseEnter = async () => {
     if (!music.song_15s_src) return;
-    // fetch music
     if (autoPlay) {
       playThis();
     }

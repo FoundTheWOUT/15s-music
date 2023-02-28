@@ -1,5 +1,5 @@
-import { AppDataSource } from "./data-source";
-import express from "express";
+import { createAppDataSource } from "./data-source";
+import express, { RequestHandler } from "express";
 import morgan from "morgan";
 import { Music } from "./entry/Music";
 import multer from "multer";
@@ -7,15 +7,48 @@ import cors from "cors";
 import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
-import { createReadStream } from "fs";
+import { rmSync } from "fs";
 
-dotenv.config();
+const ENV = process.env.ENVIRONMENT ?? "dev";
+dotenv.config({ path: resolve(process.cwd(), `.env.${ENV}`) });
 
 const upload = multer({ dest: "uploads/" });
 
+const ossProxy = (client: OSS): RequestHandler => {
+  return async (req, res) => {
+    const { src } = req.params;
+    try {
+      const res = await client.getStream(src);
+      res.stream.pipe(res);
+    } catch (error) {
+      return res.status(404).send(error);
+    }
+  };
+};
+
+const ossPutAndRemoveLocal = async (
+  client: OSS,
+  files: Express.Multer.File[]
+) => {
+  try {
+    await Promise.all(
+      files.map((file) => client.put(file.filename, resolve(file.path)))
+    );
+    files.forEach((file) => {
+      rmSync(resolve(file.path));
+    });
+    return Object.fromEntries(
+      // return the Map<nanoid(from front_end),new_file_name(from multer)>
+      files.map((file) => [file.originalname, file.filename])
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
 async function bootstrap() {
   try {
-    const source = await AppDataSource.initialize();
+    const source = await createAppDataSource().initialize();
     const app = express();
     const ossClient = new OSS({
       region: "oss-cn-guangzhou",
@@ -32,23 +65,33 @@ async function bootstrap() {
       .use("/upload", express.static("uploads"));
 
     app.post("/upload", upload.array("file", 20), async function (req, rep) {
-      console.log(req.files);
       if (!Array.isArray(req.files)) {
         return rep.status(400).send("files is not array.");
       }
-      // await Promise.all(
-      //   req.files.map((file) =>
-      //     ossClient.put(file.fieldname, resolve(file.path))
-      //   )
-      // );
-      // if files not match upload size, return not finished.
-      return rep.send(
-        Object.fromEntries(
-          // return the Map<nanoid(from front_end),new_file_name(from multer)>
-          req.files?.map((file) => [file.originalname, file.filename])
-        )
-      );
+      try {
+        const fileMap = await ossPutAndRemoveLocal(ossClient, req.files);
+        return rep.send(fileMap);
+      } catch (error) {
+        return rep.status(500).send(error);
+      }
     });
+
+    app.post(
+      "/upload/song",
+      upload.array("file", 20),
+      async function (req, rep) {
+        // TODO: check music length
+        if (!Array.isArray(req.files)) {
+          return rep.status(400).send("files is not array.");
+        }
+        try {
+          const fileMap = await ossPutAndRemoveLocal(ossClient, req.files);
+          return rep.send(fileMap);
+        } catch (error) {
+          return rep.status(500).send(error);
+        }
+      }
+    );
 
     app.post("/music", async function (req, rep) {
       const data = req.body as { musics: Music[] };
@@ -75,6 +118,8 @@ async function bootstrap() {
 
       const musics = await musicRepository
         .createQueryBuilder("music")
+        .where("music.censored = true")
+        .orderBy("music.createdAt", "DESC")
         .take(pageLimit)
         .skip(pageNum * pageLimit)
         .getMany();
@@ -89,12 +134,9 @@ async function bootstrap() {
       });
     });
 
-    app.get("/15s/:src", async function (req, rep) {
-      const { src } = req.params;
-      const stream = createReadStream(resolve("uploads", src));
-      stream.pipe(rep);
-      return;
-    });
+    // proxy
+    app.get("/15s/:src", ossProxy(ossClient));
+    app.get("/cover/:src", ossProxy(ossClient));
 
     app.listen(3500);
     console.log("start server at port 3500");

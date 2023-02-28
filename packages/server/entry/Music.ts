@@ -1,6 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 
-@Entity()
+@Entity({ orderBy: {} })
 export class Music {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,4 +19,8 @@ export class Music {
   song_15s_src?: string;
   @Column({ nullable: true })
   cover_src?: string;
+  @Column({ default: false })
+  censored: boolean;
+  @CreateDateColumn()
+  createdAt: Date;
 }
