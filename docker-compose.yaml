@@ -13,12 +13,13 @@ services:
     restart: always
     volumes:
       - 15s-music-db:/var/lib/postgresql/data
+      - ./dump-files:/dump-files
     environment:
       - POSTGRES_PASSWORD=${DatabasePW}
       - POSTGRES_DB=${DatabaseName}
     expose:
       - "5432"
     ports:
-      - "54323:5432"
+      - "3600:5432"
 volumes:
   15s-music-db:

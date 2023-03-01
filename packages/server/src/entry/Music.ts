@@ -17,7 +17,7 @@ export class Music {
   authors: string[];
   @Column()
   albums?: string;
-  @Column()
+  @Column({ nullable: true })
   song_15s_src?: string;
   @Column({ nullable: true })
   cover_src?: string;

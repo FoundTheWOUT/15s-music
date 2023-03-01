@@ -2,7 +2,9 @@
   "private": true,
   "scripts": {
     "web": "pnpm --filter @15s-music/web",
-    "serve": "pnpm --filter @15s-music/server"
+    "serve": "pnpm --filter @15s-music/server",
+    "serve-watch": "pnpm serve watch",
+    "serve-dev": "pnpm serve dev"
   },
   "dependencies": {
     "nanoid": "^4.0.1",

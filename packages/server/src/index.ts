@@ -148,6 +148,25 @@ async function bootstrap() {
       return rep.send({ total: await musicRepository.count(), musics });
     });
 
+    // all music but with out censor
+    app.get("/music/list", async function (req, rep) {
+      const page = (req.query.page as string) ?? "0";
+      const pageNum = parseInt(page);
+
+      try {
+        const musics = await source
+          .getRepository(Music)
+          .createQueryBuilder("music")
+          .orderBy("music.createdAt", "DESC")
+          .take(30)
+          .skip(pageNum * 30)
+          .getMany();
+        return rep.send({ musics });
+      } catch (error) {
+        return rep.end(error);
+      }
+    });
+
     app.get("/music/meta", async function (req, rep) {
       const musicRepository = source.getRepository(Music);
       const total = await musicRepository.count();

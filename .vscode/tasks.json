@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "serve-watch",
+      "problemMatcher": [],
+      "label": "npm: serve watch",
+      "detail": "pnpm --filter @15s-music/server watch",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "npm",
+      "script": "serve-dev",
+      "problemMatcher": [],
+      "label": "npm: serve dev",
+      "detail": "pnpm --filter @15s-music/server dev",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "dev server",
+      "problemMatcher": [],
+      "dependsOn": ["npm: serve watch", "npm: serve dev"]
+    }
+  ]
+}

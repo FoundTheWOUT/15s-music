@@ -8,6 +8,7 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { Music } from "@/music";
 import { tokenAtom } from "@/state";
 import useSWR from "swr";
+import { useAuthentication } from "@/hooks";
 
 type MusicInput = {
   nanoId: string;
@@ -30,20 +31,17 @@ function AddMusic() {
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
   const [token, setToken] = useAtom(tokenAtom);
   const [tokenInput, setTokenInput] = useState("");
-
-  const { data, mutate } = useSWR("authentication", () =>
-    fetch(`/api/authentication?token=${token}`).then((res) => res.json())
-  );
+  const { data, mutate } = useAuthentication();
 
   const handleSubmit = async () => {
     if (!musics.length) return;
     const songs = new FormData();
     const covers = new FormData();
     for (const music of musics) {
-      if (!music.file || !music.cover) {
-        console.log("must file/cover");
-        return;
-      }
+      // if (!music.file || !music.cover) {
+      //   console.log("must file/cover");
+      //   return;
+      // }
       songs.append("file", new File([music.file], music.nanoId));
       covers.append("file", new File([music.cover], music.nanoId));
     }
