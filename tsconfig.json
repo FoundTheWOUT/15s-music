@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@15s-music/server/*": ["packages/server/src/*"]
+    }
+  }
+}

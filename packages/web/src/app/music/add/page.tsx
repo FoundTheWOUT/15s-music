@@ -6,9 +6,8 @@ import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Music } from "@/music";
+import AuthenticationGuard from "@/app/components/authenticationGuard";
 import { tokenAtom } from "@/state";
-import useSWR from "swr";
-import { useAuthentication } from "@/hooks";
 
 type MusicInput = {
   nanoId: string;
@@ -29,9 +28,7 @@ const musicInputAtom = atom<MusicInput>({
 function AddMusic() {
   const [musics, setMusics] = useState<MusicInput[]>([]);
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
-  const [token, setToken] = useAtom(tokenAtom);
-  const [tokenInput, setTokenInput] = useState("");
-  const { data, mutate } = useAuthentication();
+  const [token] = useAtom(tokenAtom);
 
   const handleSubmit = async () => {
     if (!musics.length) return;
@@ -87,27 +84,6 @@ function AddMusic() {
       console.log(res);
     });
   };
-
-  if (!data) return <div>loading</div>;
-
-  if (data.role !== "master") {
-    return (
-      <>
-        <Input
-          value={tokenInput}
-          onChange={(e) => setTokenInput(e.currentTarget.value)}
-        />
-        <Button
-          onClick={() => {
-            setToken(tokenInput);
-            mutate(tokenInput);
-          }}
-        >
-          Token
-        </Button>
-      </>
-    );
-  }
 
   return (
     <div>
@@ -200,4 +176,12 @@ function AddMusic() {
   );
 }
 
-export default AddMusic;
+function AddMusicPage() {
+  return (
+    <AuthenticationGuard>
+      <AddMusic />
+    </AuthenticationGuard>
+  );
+}
+
+export default AddMusicPage;

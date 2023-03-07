@@ -1,4 +1,4 @@
-export type { Music } from "@15s-music/server/entry";
+export type { Music } from "@15s-music/server/src/entry";
 
 let audio: HTMLAudioElement | null = null;
 export const playMusic = (blob: Blob): Promise<HTMLAudioElement | null> => {
