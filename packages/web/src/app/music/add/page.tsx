@@ -87,7 +87,7 @@ function AddMusic() {
           musics: musicsSchema,
         }),
       }).then((res) => {
-        // setMusics([]);
+        setMusics([]);
         console.log(res);
       });
     } catch (error) {

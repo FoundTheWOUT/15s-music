@@ -9,6 +9,7 @@ import cn from "classnames";
 import { useAtom } from "jotai";
 import { autoPlayAtom, likedSongAtom } from "@/state";
 import { playEvent } from "./MusicList";
+import { useDebounce } from "@/hooks";
 
 function Music15sPlayer({ music }: { music: Music }) {
   const { trigger } = useSWRMutation(music.song_15s_src, () =>
@@ -26,6 +27,7 @@ function Music15sPlayer({ music }: { music: Music }) {
   const [paused, setPaused] = useState(true);
   const [likedSong, setLikedSong] = useAtom(likedSongAtom);
   const liked = likedSong.includes(music.uuid);
+
   const handleHeartClick = () => {
     if (liked) {
       setLikedSong((liked) => {
@@ -56,6 +58,11 @@ function Music15sPlayer({ music }: { music: Music }) {
           });
     }
   };
+
+  const { trigger: debouncedPlay, stop } = useDebounce(() => {
+    play();
+  });
+
   const pause = () => {
     player.current && player.current.pause();
     setPaused(true);
@@ -73,15 +80,15 @@ function Music15sPlayer({ music }: { music: Music }) {
     };
   }, [music.id]);
 
-  // TODO: optimize mouse flowing
   const handleMouseEnter = async () => {
     if (!music.song_15s_src) return;
     if (autoPlay) {
-      play();
+      debouncedPlay();
     }
   };
 
   const handleMouseLeave = () => {
+    stop();
     if (autoPlay) {
       pause();
     }
