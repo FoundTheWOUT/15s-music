@@ -43,46 +43,56 @@ function AddMusic() {
       covers.append("file", new File([music.cover], music.nanoId));
     }
 
-    const [songFileMap, coverFileMap] = await Promise.all([
-      // song
-      fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/song`, {
+    try {
+      const [songFileMap, coverFileMap] = await Promise.all([
+        // song
+        fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/song`, {
+          method: "POST",
+          headers: {
+            authorization: `Basic ${token}`,
+          },
+          body: songs,
+        }).then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("reason");
+        }),
+        // cover
+        fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload`, {
+          method: "POST",
+          headers: {
+            authorization: `Basic ${token}`,
+          },
+          body: covers,
+        }).then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("reason");
+        }),
+      ]);
+
+      const musicsSchema: Partial<Music>[] = musics.map((music) => ({
+        name: music.name,
+        authors: music.authors,
+        cover_src: coverFileMap[music.nanoId],
+        song_15s_src: songFileMap[music.nanoId],
+        albums: music.albums ?? music.name,
+      }));
+
+      fetch(`${process.env.NEXT_PUBLIC_API_GATE}/music`, {
         method: "POST",
         headers: {
           authorization: `Basic ${token}`,
+          "Content-Type": "application/json",
         },
-        body: songs,
-      }).then((res) => res.json()),
-      // cover
-      fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload`, {
-        method: "POST",
-        headers: {
-          authorization: `Basic ${token}`,
-        },
-        body: covers,
-      }).then((res) => res.json()),
-    ]);
-
-    const musicsSchema: Partial<Music>[] = musics.map((music) => ({
-      name: music.name,
-      authors: music.authors,
-      cover_src: coverFileMap[music.nanoId],
-      song_15s_src: songFileMap[music.nanoId],
-      albums: music.albums ?? music.name,
-    }));
-
-    fetch(`${process.env.NEXT_PUBLIC_API_GATE}/music`, {
-      method: "POST",
-      headers: {
-        authorization: `Basic ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        musics: musicsSchema,
-      }),
-    }).then((res) => {
-      setMusics([]);
-      console.log(res);
-    });
+        body: JSON.stringify({
+          musics: musicsSchema,
+        }),
+      }).then((res) => {
+        // setMusics([]);
+        console.log(res);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

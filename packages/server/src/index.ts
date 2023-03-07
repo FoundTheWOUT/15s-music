@@ -51,7 +51,7 @@ async function bootstrap() {
     authRoute.use(auth());
 
     const ossClient = new OSS({
-      region: "oss-cn-guangzhou",
+      region: process.env.Bucket_Region,
       accessKeyId: process.env.Ali_AccessKey_Id,
       accessKeySecret: process.env.Ali_AccessKey_Secret,
       bucket: process.env.Bucket,
