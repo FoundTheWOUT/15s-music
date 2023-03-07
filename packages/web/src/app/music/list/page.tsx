@@ -1,5 +1,5 @@
 import List from "./list";
-import AuthenticationGuard from "@/app/components/authenticationGuard";
+import AuthenticationGuard from "../../components/AuthenticationGuard";
 
 async function MusicList() {
   return (

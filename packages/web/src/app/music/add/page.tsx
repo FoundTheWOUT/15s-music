@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Music } from "@/music";
-import AuthenticationGuard from "@/app/components/authenticationGuard";
+import AuthenticationGuard from "../../components/AuthenticationGuard";
 import { tokenAtom } from "@/state";
 
 type MusicInput = {
