@@ -3,7 +3,7 @@
 import { PAGE_SIZE } from "@/const";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PropsWithChildren, useEffect, useRef } from "react";
-import { Event } from "../event";
+import { Event } from "../../event";
 import ErrorBoundary from "./ErrorBoundary";
 
 export const playEvent = new Event<{ id: number }>();
