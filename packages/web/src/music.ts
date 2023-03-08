@@ -16,17 +16,17 @@ const FFT_SIZE = 512;
 
 export class MusicPlayer {
   frameId = 0;
-  audio = new Audio();
+  audio: HTMLAudioElement | undefined;
   audioContext: AudioContext | undefined;
   analyser: AnalyserNode | undefined;
   dataArray = new Uint8Array(FFT_SIZE / 2);
-  constructor() {
-    // audio setup
-    this.audio.loop = true;
-  }
 
   // Audio context should create after user gesture
   setupCtx() {
+    if (!this.audio) {
+      this.audio = new Audio();
+      this.audio.loop = true;
+    }
     if (!this.audioContext) {
       this.audioContext = new AudioContext();
       // analyser setup
@@ -43,27 +43,31 @@ export class MusicPlayer {
   play(buffer: ArrayBuffer) {
     this.setupCtx();
     return new Promise(async (res, rej) => {
+      if (!this.audio) {
+        rej("Audio not init");
+        return;
+      }
       const blob = new Blob([buffer], { type: "audio/mp3" });
-      if (this.audio.src) {
+      if (this.audio?.src) {
         URL.revokeObjectURL(this.audio.src);
       }
       this.audio.src = URL.createObjectURL(blob);
-      await this.audio.play().catch(rej);
-      this.renderFrame();
+      await this.audio?.play().catch(rej);
+      this.dance();
       res(this);
     });
   }
 
   pause() {
-    this.audio.pause();
+    this.audio?.pause();
     cancelAnimationFrame(this.frameId);
   }
 
-  renderFrame() {
+  dance() {
     if (!this.analyser) return;
 
     this.frameId = requestAnimationFrame(() => {
-      this.renderFrame();
+      this.dance();
     });
     // 更新频率数据
     this.analyser.getByteTimeDomainData(this.dataArray);

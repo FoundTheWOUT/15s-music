@@ -4,12 +4,14 @@ import Image from "next/image";
 import useSWRMutation from "swr/mutation";
 import { Music, MusicPlayer } from "../../music";
 import { HeartIcon, PauseIcon, PlayIcon } from "@heroicons/react/24/solid";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import cn from "classnames";
 import { useAtom } from "jotai";
 import { autoPlayAtom, likedSongAtom } from "@/state";
 import { playEvent } from "./MusicList";
 import { useDebounce } from "@/hooks";
+
+const player = new MusicPlayer();
 
 function Music15sPlayer({ music }: { music: Music }) {
   const { trigger } = useSWRMutation(music.song_15s_src, () =>
@@ -17,11 +19,6 @@ function Music15sPlayer({ music }: { music: Music }) {
       res.arrayBuffer()
     )
   );
-
-  const player = useRef<MusicPlayer | null>(null);
-  if (!player.current) {
-    player.current = new MusicPlayer();
-  }
 
   const [autoPlay] = useAtom(autoPlayAtom);
   const [paused, setPaused] = useState(true);
@@ -45,17 +42,17 @@ function Music15sPlayer({ music }: { music: Music }) {
     const buffer = await trigger();
     if (buffer) {
       // play music
-      player.current &&
-        player.current
-          .play(buffer)
-          .then(() => {
-            setPaused(false);
-            playEvent.emit({ id: music.id });
-          })
-          .catch((err) => {
-            // TODO:notice
-            console.log(err);
-          });
+      // stop other music first.
+      playEvent.emit({ id: music.id });
+      player
+        .play(buffer)
+        .then(() => {
+          setPaused(false);
+        })
+        .catch((err) => {
+          // TODO:notice
+          console.log(err);
+        });
     }
   };
 
@@ -64,7 +61,7 @@ function Music15sPlayer({ music }: { music: Music }) {
   });
 
   const pause = () => {
-    player.current && player.current.pause();
+    player.pause();
     setPaused(true);
   };
 

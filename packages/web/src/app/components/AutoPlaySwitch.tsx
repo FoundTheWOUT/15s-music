@@ -1,16 +1,40 @@
 "use client";
 
 import { autoPlayAtom } from "@/state";
-import { Switch } from "@headlessui/react";
+import { Switch, Transition } from "@headlessui/react";
 import cn from "classnames";
 import { useAtom } from "jotai";
+import { useState } from "react";
 
 export default function AutoPlaySwitch() {
   const [autoPlay, setAutoPlay] = useAtom(autoPlayAtom);
+  const [hover, setHover] = useState(false);
   return (
     <Switch.Group>
       <div className="inline-flex items-center gap-1">
-        <Switch.Label>自动播放</Switch.Label>
+        <Switch.Label>
+          <div className="relative">
+            <div
+              onMouseEnter={() => setHover(true)}
+              onMouseLeave={() => setHover(false)}
+              className="font-bold text-[#fc6767]"
+            >
+              自动播放
+            </div>
+            <Transition
+              className="absolute -left-16 mt-2 w-48 rounded-xl border bg-white p-2 text-sm shadow-xl"
+              show={hover}
+              enter="transition-opacity"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="transition-opacity"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              启动该选项后，鼠标移动到唱片上，音乐自动播放
+            </Transition>
+          </div>
+        </Switch.Label>
         <Switch
           checked={autoPlay}
           onChange={setAutoPlay}
