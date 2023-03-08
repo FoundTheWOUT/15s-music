@@ -4,10 +4,14 @@ import useSWR from "swr";
 import { tokenAtom } from "./state";
 
 export const useAuthentication = () => {
+  let localToken = localStorage.getItem("token");
+  localToken = localToken ? JSON.parse(localToken) : "";
   const [token, setToken] = useAtom(tokenAtom);
 
   const { data, mutate } = useSWR("authentication", () =>
-    fetch(`/api/authentication?token=${token}`).then((res) => res.json())
+    fetch(`/api/authentication?token=${token || localToken}`).then((res) =>
+      res.json()
+    )
   );
 
   return {
