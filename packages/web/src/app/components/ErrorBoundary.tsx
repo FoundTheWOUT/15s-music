@@ -1,24 +1,18 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 
-export default class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true };
+export default class ErrorBoundary extends React.Component<
+  PropsWithChildren<{}>,
+  { error: Error }
+> {
+  static getDerivedStateFromError(error: Error) {
+    return { error };
   }
 
   render() {
-    if (this.state.hasError) {
-      // You can render any custom fallback UI
-      return this.state.fallback ? (
-        this.state.fallback
-      ) : (
-        <h1>Something went wrong.</h1>
-      );
+    const error = this.state.error;
+
+    if (error) {
+      return <div>{error.message}</div>;
     }
 
     return this.props.children;
