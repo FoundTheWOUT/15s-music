@@ -1,11 +1,15 @@
 import { useAtom } from "jotai";
 import { useRef } from "react";
 import useSWR from "swr";
+import { isBrowser } from "./const";
 import { tokenAtom } from "./state";
 
 export const useAuthentication = () => {
-  let localToken = localStorage.getItem("token");
-  localToken = localToken ? JSON.parse(localToken) : "";
+  let localToken = "";
+  if (isBrowser) {
+    const tokenFromStorage = localStorage.getItem("token");
+    localToken = tokenFromStorage ? JSON.parse(tokenFromStorage) : "";
+  }
   const [token, setToken] = useAtom(tokenAtom);
 
   const { data, mutate } = useSWR("authentication", () =>
