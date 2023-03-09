@@ -1,0 +1,27 @@
+name: Deploy Node.js app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/server/**/*.ts"
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy server
+        uses: appleboy/ssh-action@master # 使用第三方操作来执行 SSH 命令
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PASSWORD }}
+          script_stop: true
+          script: | # 执行部署相关的脚本
+            cd /root/15-music
+            git pull
+            sudo docker-compose build --build-arg version=$(git rev-parse --short HEAD)
+            sudo docker-compose up -d server --no-deps
