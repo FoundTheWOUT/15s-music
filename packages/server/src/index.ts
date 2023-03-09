@@ -1,19 +1,20 @@
-import { createAppDataSource } from "./data-source";
 import express from "express";
 import morgan from "morgan";
-import { Music } from "./entry/Music";
 import multer from "multer";
 import cors from "cors";
 import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
-import { v4 as uuidv4 } from "uuid";
 import { isProd } from "./const";
 import { log } from "./utils";
-import { auth } from "./middlerware/authentication";
 import sharp from "sharp";
+import { musicRoute } from "./routes/music";
+import { getAppContext } from "./ctx";
+
+const VERSION = process.env.Version;
 
 log("cwd:", process.cwd());
+log("version:", VERSION);
 // dev load .env.dev, prod load .env
 const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
 dotenv.config({ path: dotenvPath });
@@ -53,39 +54,31 @@ const sharpImageToWebp = async (buf: Buffer) => {
 
 async function bootstrap() {
   try {
-    const source = await createAppDataSource().initialize();
-
+    const { ossClient, authRoute } = await getAppContext();
     const app = express();
-    const authRoute = express.Router();
-    authRoute.use(auth());
-
-    const ossClient = new OSS({
-      region: process.env.Bucket_Region,
-      accessKeyId: process.env.Ali_AccessKey_Id,
-      accessKeySecret: process.env.Ali_AccessKey_Secret,
-      bucket: process.env.Bucket,
-    });
 
     app
+      .use(
+        isProd
+          ? cors({
+              origin: process.env.CORS_ORIGIN,
+            })
+          : cors()
+      )
       .use(express.json())
       .use(express.urlencoded())
       .use(morgan("tiny"))
-      .use("/upload", express.static("uploads"));
-
-    if (isProd) {
-      app.use(
-        cors({
-          origin: process.env.CORS_ORIGIN,
-        })
-      );
-    } else {
-      app.use(cors());
-    }
-
-    app.use(authRoute);
+      .use("/upload", express.static("uploads"))
+      .use(authRoute)
+      .use(await musicRoute());
 
     app.get("/ping", (req, rep) => {
       return rep.end("pong");
+    });
+
+    app.get("/version", (req, rep) => {
+      log("version:", VERSION);
+      return rep.end(VERSION);
     });
 
     authRoute.post(
@@ -135,69 +128,6 @@ async function bootstrap() {
         }
       }
     );
-
-    authRoute.post("/music", async function (req, rep) {
-      const data = req.body as { musics: Music[] };
-      const musicRepository = source.getRepository(Music);
-      const musics = data.musics.map((music) =>
-        musicRepository.create({ ...music, uuid: uuidv4() })
-      );
-      const res = source.getRepository(Music).save(musics);
-      return rep.send(res);
-    });
-
-    app.get("/music", async function (req, rep) {
-      let page = req.query.page;
-      let limit = req.query.limit ?? "30";
-      if (typeof page !== "string" || typeof limit !== "string") {
-        rep.status(400);
-        return rep.send("page,limit query is require.");
-      }
-      const pageNum = parseInt(page);
-      const pageLimit = parseInt(limit);
-      if (Number.isNaN(pageNum)) {
-        rep.status(400);
-        return rep.send("page query must be a num.");
-      }
-      const musicRepository = source.getRepository(Music);
-
-      const musics = await musicRepository
-        .createQueryBuilder("music")
-        .where("music.censored = true")
-        .orderBy("music.createdAt", "DESC")
-        .take(pageLimit)
-        .skip(pageNum * pageLimit)
-        .getMany();
-
-      return rep.send({ total: await musicRepository.count(), musics });
-    });
-
-    // all music but with out censor
-    app.get("/music/list", async function (req, rep) {
-      const page = (req.query.page as string) ?? "0";
-      const pageNum = parseInt(page);
-
-      try {
-        const musics = await source
-          .getRepository(Music)
-          .createQueryBuilder("music")
-          .orderBy("music.createdAt", "DESC")
-          .take(30)
-          .skip(pageNum * 30)
-          .getMany();
-        return rep.send({ musics });
-      } catch (error) {
-        return rep.end(error);
-      }
-    });
-
-    app.get("/music/meta", async function (req, rep) {
-      const musicRepository = source.getRepository(Music);
-      const total = await musicRepository.count();
-      return rep.send({
-        total,
-      });
-    });
 
     app.listen(3500);
     console.log("start server at port 3500");
