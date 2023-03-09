@@ -29,4 +29,4 @@ jobs:
             cd /root/15s-music
             git pull
             sudo docker-compose build --build-arg version=$(git rev-parse --short HEAD)
-            sudo docker-compose up -d server --no-deps
+            sudo docker-compose up -d --no-deps server

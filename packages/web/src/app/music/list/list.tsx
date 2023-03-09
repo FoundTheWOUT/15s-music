@@ -3,7 +3,12 @@ import { Music } from "@/music";
 async function MusicList() {
   const data: { musics: Music[] } = await fetch(
     `${process.env.NEXT_PUBLIC_API_GATE}/music/list`,
-    { cache: "no-cache" }
+    {
+      cache: "no-cache",
+      headers: {
+        authorization: `Basic ${process.env.MASTER_TOKEN}`,
+      },
+    }
   ).then((res) => res.json());
 
   return (
