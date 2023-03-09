@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Deploy server
         uses: appleboy/ssh-action@master # 使用第三方操作来执行 SSH 命令
         with:
