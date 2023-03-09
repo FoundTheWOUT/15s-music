@@ -1,6 +1,10 @@
 name: Deploy Node.js app
 
 on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Run deploy"
   push:
     branches: [main]
     paths:
