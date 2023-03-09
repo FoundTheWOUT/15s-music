@@ -39,11 +39,13 @@ function AddMusic() {
       //   console.log("must file/cover");
       //   return;
       // }
+
       songs.append("file", new File([music.file], music.nanoId));
       covers.append("file", new File([music.cover], music.nanoId));
     }
 
     try {
+      // return map of nanoid to file src
       const [songFileMap, coverFileMap] = await Promise.all([
         // song
         fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/song`, {
@@ -57,7 +59,7 @@ function AddMusic() {
           throw new Error("reason");
         }),
         // cover
-        fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/image`, {
           method: "POST",
           headers: {
             authorization: `Basic ${token}`,

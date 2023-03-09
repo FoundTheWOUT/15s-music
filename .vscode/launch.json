@@ -5,6 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "command": "pnpm serve-dev",
+      "name": "Start server",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
       "command": "pnpm web dev",
       "name": "Run web dev",
       "request": "launch",

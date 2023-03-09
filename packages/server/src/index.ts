@@ -7,39 +7,48 @@ import cors from "cors";
 import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
-import { rmSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { isProd } from "./const";
 import { log } from "./utils";
 import { auth } from "./middlerware/authentication";
+import sharp from "sharp";
 
 log("cwd:", process.cwd());
 // dev load .env.dev, prod load .env
 const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
 dotenv.config({ path: dotenvPath });
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "uploads/", storage: multer.memoryStorage() });
 
-const ossPutAndRemoveLocal = async (
+const ossPut = async (
   client: OSS,
-  files: Express.Multer.File[]
+  files: Express.Multer.File[],
+  filenameFormatter?: (name: string) => string
 ) => {
   try {
-    await Promise.all(
-      files.map((file) => {
-        return client.put(file.filename, resolve(file.path));
+    // return the Map<nanoid(from front_end),new_file_name(from multer)>
+    const entry = await Promise.all(
+      files.map(async (file) => {
+        const id = file.originalname;
+        const { name } = await client.put(
+          filenameFormatter ? filenameFormatter(id) : id,
+          file.buffer
+        );
+        return [id, name];
       })
     );
-    files.forEach((file) => {
-      rmSync(resolve(file.path));
-    });
-    return Object.fromEntries(
-      // return the Map<nanoid(from front_end),new_file_name(from multer)>
-      files.map((file) => [file.originalname, file.filename])
-    );
+    return Object.fromEntries(entry);
   } catch (error) {
     throw error;
   }
+};
+
+const sharpImageToWebp = async (buf: Buffer) => {
+  const output = await sharp(buf)
+    .resize(200)
+    .webp({ lossless: true })
+    .toBuffer();
+  return output;
 };
 
 async function bootstrap() {
@@ -80,16 +89,30 @@ async function bootstrap() {
     });
 
     authRoute.post(
-      "/upload",
+      "/upload/image",
       upload.array("file", 20),
       async function (req, rep) {
         if (!Array.isArray(req.files)) {
           return rep.status(400).send("files is not array.");
         }
         try {
-          const fileMap = await ossPutAndRemoveLocal(ossClient, req.files);
+          // sharp image
+          const files: Express.Multer.File[] = await Promise.all(
+            req.files.map(async (file) => {
+              return {
+                ...file,
+                buffer: await sharpImageToWebp(file.buffer),
+              } as Express.Multer.File;
+            })
+          );
+          const fileMap = await ossPut(
+            ossClient,
+            files,
+            (name) => `${name}.webp`
+          );
           return rep.send(fileMap);
         } catch (error) {
+          log(error);
           return rep.status(500).send(error);
         }
       }
@@ -104,9 +127,10 @@ async function bootstrap() {
           return rep.status(400).send("files is not array.");
         }
         try {
-          const fileMap = await ossPutAndRemoveLocal(ossClient, req.files);
+          const fileMap = await ossPut(ossClient, req.files);
           return rep.send(fileMap);
         } catch (error) {
+          log(error);
           return rep.status(500).send(error);
         }
       }
