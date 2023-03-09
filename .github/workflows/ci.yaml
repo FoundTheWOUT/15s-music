@@ -26,7 +26,7 @@ jobs:
           key: ${{ secrets.KEY }}
           script_stop: true
           script: | # 执行部署相关的脚本
-            cd /root/15-music
+            cd /root/15s-music
             git pull
             sudo docker-compose build --build-arg version=$(git rev-parse --short HEAD)
             sudo docker-compose up -d server --no-deps
