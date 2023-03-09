@@ -10,6 +10,7 @@ import { log } from "./utils";
 import sharp from "sharp";
 import { musicRoute } from "./routes/music";
 import { getAppContext } from "./ctx";
+import { auth } from "./middleware/authentication";
 
 const VERSION = process.env.Version;
 
@@ -54,7 +55,7 @@ const sharpImageToWebp = async (buf: Buffer) => {
 
 async function bootstrap() {
   try {
-    const { ossClient, authRoute } = await getAppContext();
+    const { ossClient } = await getAppContext();
     const app = express();
 
     app
@@ -69,7 +70,6 @@ async function bootstrap() {
       .use(express.urlencoded())
       .use(morgan("tiny"))
       .use("/upload", express.static("uploads"))
-      .use(authRoute)
       .use(await musicRoute());
 
     app.get("/ping", (req, rep) => {
@@ -81,8 +81,9 @@ async function bootstrap() {
       return rep.end(VERSION);
     });
 
-    authRoute.post(
+    app.post(
       "/upload/image",
+      auth(),
       upload.array("file", 20),
       async function (req, rep) {
         if (!Array.isArray(req.files)) {
@@ -111,8 +112,9 @@ async function bootstrap() {
       }
     );
 
-    authRoute.post(
+    app.post(
       "/upload/song",
+      auth(),
       upload.array("file", 20),
       async function (req, rep) {
         // TODO: check music length

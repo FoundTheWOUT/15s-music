@@ -1,14 +1,11 @@
 import OSS from "ali-oss";
 import { DataSource } from "typeorm";
 import { createAppDataSource } from "./data-source";
-import express, { Router } from "express";
-import { auth } from "./middlerware/authentication";
 
 let context: AppContext | null = null;
 class AppContext {
   dbSource: DataSource;
   ossClient: OSS;
-  authRoute: Router = express.Router().use(auth());
   constructor() {
     this.ossClient = new OSS({
       region: process.env.Bucket_Region,

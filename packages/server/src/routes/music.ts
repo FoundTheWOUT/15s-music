@@ -2,13 +2,14 @@ import { Music } from "../entry/Music";
 import { v4 as uuidv4 } from "uuid";
 import express, { Router } from "express";
 import { getAppContext } from "../ctx";
+import { auth } from "../middleware/authentication";
 
 export async function musicRoute(): Promise<Router> {
-  const { dbSource, authRoute } = await getAppContext();
+  const { dbSource } = await getAppContext();
 
   const music = express.Router();
 
-  authRoute.post("/music", async function (req, rep) {
+  music.post("/music", auth(), async function (req, rep) {
     const data = req.body as { musics: Music[] };
     const musicRepository = dbSource.getRepository(Music);
     const musics = data.musics.map((music) =>
@@ -45,7 +46,7 @@ export async function musicRoute(): Promise<Router> {
   });
 
   // all music but with out censor
-  authRoute.get("/music/list", async function (req, rep) {
+  music.get("/music/list", auth(), async function (req, rep) {
     const page = (req.query.page as string) ?? "0";
     const pageNum = parseInt(page);
 
