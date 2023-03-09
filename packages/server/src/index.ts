@@ -16,6 +16,7 @@ const VERSION = process.env.Version;
 
 log("cwd:", process.cwd());
 log("version:", VERSION);
+log("environment:", isProd ? "production" : "other");
 // dev load .env.dev, prod load .env
 const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
 dotenv.config({ path: dotenvPath });
