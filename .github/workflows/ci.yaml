@@ -5,6 +5,7 @@ on:
     inputs:
       name:
         description: "Run deploy"
+        required: false
   push:
     branches: [main]
     paths:
@@ -22,7 +23,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PASSWORD }}
+          password: ${{ secrets.PASSWORD }}
           script_stop: true
           script: | # 执行部署相关的脚本
             cd /root/15-music
