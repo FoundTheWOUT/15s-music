@@ -10,6 +10,8 @@
 
 ---
 
+<img src="./resource/preview.png"/>
+
 ### 特点
 
 - WebBase，即用即走
