@@ -14,6 +14,7 @@ declare global {
       DatabasePort: string;
       CORS_ORIGIN: string;
       MASTER_TOKEN: string;
+      ENABLE_OSS: string;
     }
   }
 }

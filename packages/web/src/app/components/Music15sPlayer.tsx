@@ -10,12 +10,13 @@ import { useAtom } from "jotai";
 import { autoPlayAtom, likedSongAtom } from "@/state";
 import { playEvent } from "./MusicList";
 import { useDebounce } from "@/hooks";
+import { STATIC_HOST } from "../../const";
 
 const player = new MusicPlayer();
 
 function Music15sPlayer({ music }: { music: Music }) {
   const { trigger } = useSWRMutation(music.song_15s_src, () =>
-    fetch(`${process.env.NEXT_PUBLIC_OSS}/${music.song_15s_src}`).then((res) =>
+    fetch(`${STATIC_HOST}/${music.song_15s_src}`).then((res) =>
       res.arrayBuffer()
     )
   );
@@ -129,8 +130,8 @@ function Music15sPlayer({ music }: { music: Music }) {
         className="transition-[filter] group-hover/music:blur"
         src={
           music.cover_src
-            ? music.cover_src.startsWith("/")
-              ? music.cover_src
+            ? music.cover_src.startsWith("local")
+              ? `${STATIC_HOST}/${music.cover_src}`
               : `${process.env.NEXT_PUBLIC_OSS}/${music.cover_src}`
             : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         }

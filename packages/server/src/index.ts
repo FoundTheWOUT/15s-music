@@ -13,6 +13,11 @@ import { getAppContext } from "./ctx";
 import { auth } from "./middleware/authentication";
 
 const VERSION = process.env.Version;
+const ENABLE_OSS = process.env.ENABLE_OSS
+  ? process.env.ENABLE_OSS === "true"
+    ? true
+    : false
+  : isProd;
 
 log("cwd:", process.cwd());
 log("version:", VERSION);
@@ -21,22 +26,47 @@ log("environment:", isProd ? "production" : "other");
 const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
 dotenv.config({ path: dotenvPath });
 
-const upload = multer({ dest: "uploads/", storage: multer.memoryStorage() });
+const upload = multer({
+  storage: ENABLE_OSS
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: "uploads/",
+      }),
+});
 
+const webpUpload = multer({
+  storage: ENABLE_OSS
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: "uploads/",
+        filename: function (req, file, cb) {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          cb(null, `local-${uniqueSuffix}.webp`);
+        },
+      }),
+});
+
+// return the Map<nanoid(from front_end),new_file_name(from multer)>
+// the new_file_name will store into db. And frontend will concat the value with Static path later.
 const ossPut = async (
   client: OSS,
   files: Express.Multer.File[],
   filenameFormatter?: (name: string) => string
-) => {
+): Promise<Record<string, string>> => {
   try {
-    // return the Map<nanoid(from front_end),new_file_name(from multer)>
     const entry = await Promise.all(
       files.map(async (file) => {
         const id = file.originalname;
-        const { name } = await client.put(
-          filenameFormatter ? filenameFormatter(id) : id,
-          file.buffer
-        );
+        const name = ENABLE_OSS
+          ? filenameFormatter
+            ? filenameFormatter(id)
+            : id
+          : file.filename;
+
+        if (ENABLE_OSS) {
+          await client.put(name, file.buffer);
+        }
         return [id, name];
       })
     );
@@ -70,7 +100,7 @@ async function bootstrap() {
       .use(express.json())
       .use(express.urlencoded())
       .use(morgan("tiny"))
-      .use("/upload", express.static("uploads"))
+      .use("/uploads", express.static("uploads"))
       .use(await musicRoute());
 
     app.get("/ping", (req, rep) => {
@@ -85,7 +115,7 @@ async function bootstrap() {
     app.post(
       "/upload/image",
       auth(),
-      upload.array("file", 20),
+      webpUpload.array("file", 20),
       async function (req, rep) {
         if (!Array.isArray(req.files)) {
           return rep.status(400).send("files is not array.");
@@ -96,7 +126,7 @@ async function bootstrap() {
             req.files.map(async (file) => {
               return {
                 ...file,
-                buffer: await sharpImageToWebp(file.buffer),
+                buffer: file.buffer && (await sharpImageToWebp(file.buffer)),
               } as Express.Multer.File;
             })
           );
