@@ -1,7 +1,8 @@
 import { RequestHandler } from "express";
 import { log } from "../utils";
 
-export const auth = (): RequestHandler => {
+export const auth = (options?: { allowGuest?: boolean }): RequestHandler => {
+  const { allowGuest = false } = options ?? {};
   return (req, res, next) => {
     log("passing authentication middleware.");
     if (req.method === "POST" || "GET") {
@@ -11,11 +12,15 @@ export const auth = (): RequestHandler => {
           )
         : ({} as any);
 
+      if (allowGuest && Basic == "guest") {
+        return next();
+      }
+
       if (Basic !== process.env.MASTER_TOKEN) {
         return res.status(401).end();
       }
     }
 
-    next();
+    return next();
   };
 };

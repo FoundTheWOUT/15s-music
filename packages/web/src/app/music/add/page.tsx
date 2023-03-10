@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Select, Input, Button, Upload } from "antd";
+import { Select, Input, Button, Upload, message } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { TrashIcon } from "@heroicons/react/24/outline";
-import { Music } from "@/music";
+import { checkAudioLength, Music } from "@/music";
 import AuthenticationGuard from "../../components/AuthenticationGuard";
 import { tokenAtom } from "@/state";
 
@@ -136,16 +136,18 @@ function AddMusic() {
         </div>
       ))}
       <div className="flex gap-2">
-        <Input
-          className="w-36"
-          value={musicInput.name}
-          onChange={(e) =>
-            setMusicInput((preInput) => ({
-              ...preInput,
-              name: e.currentTarget.value,
-            }))
-          }
-        />
+        <div>
+          <Input
+            className="w-36"
+            value={musicInput.name}
+            onChange={(e) =>
+              setMusicInput((preInput) => ({
+                ...preInput,
+                name: e.currentTarget.value,
+              }))
+            }
+          />
+        </div>
         <Select
           mode="tags"
           className="flex-1"
@@ -169,6 +171,13 @@ function AddMusic() {
           }}
           fileList={musicInput.file ? [musicInput.file] : []}
           maxCount={1}
+          accept=".mp3"
+          onRemove={() => {
+            setMusicInput((preInput) => ({
+              ...preInput,
+              file: undefined,
+            }));
+          }}
         >
           <Button className="w-24">15S</Button>
         </Upload>
@@ -184,18 +193,48 @@ function AddMusic() {
           }}
           fileList={musicInput.cover ? [musicInput.cover] : []}
           maxCount={1}
+          onRemove={() => {
+            setMusicInput((preInput) => ({
+              ...preInput,
+              cover: undefined,
+            }));
+          }}
         >
           <Button className="w-24">封面</Button>
         </Upload>
         {musics.length < 20 && (
           <Button
-            onClick={() => {
+            onClick={async () => {
+              let passed = true;
+              let msg = "";
+              if (
+                !musicInput.name ||
+                !musicInput.authors ||
+                !musicInput.file ||
+                !musicInput.cover
+              ) {
+                passed = false;
+                msg = "请填写表单";
+              }
+              // let user edit the audio.
+              // if (musicInput.file) {
+              //   audioPreview = URL.createObjectURL(musicInput.file);
+              //   passed = (await checkAudioLength(audioPreview)) as boolean;
+              //   if (!passed) msg = "音频长度超过15秒";
+              // }
+              if (!passed) {
+                message.error(msg);
+                return;
+              }
               setMusics((musics) => [
                 ...musics,
                 {
                   ...musicInput,
-                  coverPreview: URL.createObjectURL(musicInput.cover),
-                  audioPreview: URL.createObjectURL(musicInput.file),
+
+                  coverPreview:
+                    musicInput.cover && URL.createObjectURL(musicInput.cover),
+                  audioPreview:
+                    musicInput.file && URL.createObjectURL(musicInput.file),
                   nanoId: nanoid(),
                 },
               ]);

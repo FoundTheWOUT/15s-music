@@ -14,6 +14,18 @@ function map(
 
 const FFT_SIZE = 512;
 
+export const checkAudioLength = (url: string) => {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio();
+    audio.src = url;
+    audio.addEventListener("loadedmetadata", (e) => {
+      if (audio.duration <= 18) resolve(true);
+      resolve(false);
+    });
+    audio.addEventListener("error", reject);
+  });
+};
+
 export class MusicPlayer {
   frameId = 0;
   audio: HTMLAudioElement | undefined;

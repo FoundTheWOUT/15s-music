@@ -11,6 +11,7 @@ import sharp from "sharp";
 import { musicRoute } from "./routes/music";
 import { getAppContext } from "./ctx";
 import { auth } from "./middleware/authentication";
+import { parseFile, parseBuffer } from "music-metadata";
 
 const VERSION = process.env.Version;
 const ENABLE_OSS = process.env.ENABLE_OSS
@@ -114,7 +115,7 @@ async function bootstrap() {
 
     app.post(
       "/upload/image",
-      auth(),
+      auth({ allowGuest: true }),
       webpUpload.array("file", 20),
       async function (req, rep) {
         if (!Array.isArray(req.files)) {
@@ -145,7 +146,7 @@ async function bootstrap() {
 
     app.post(
       "/upload/song",
-      auth(),
+      auth({ allowGuest: true }),
       upload.array("file", 20),
       async function (req, rep) {
         // TODO: check music length
@@ -153,11 +154,24 @@ async function bootstrap() {
           return rep.status(400).send("files is not array.");
         }
         try {
+          for (const file of req.files) {
+            const meta = file.buffer
+              ? await parseBuffer(file.buffer)
+              : await parseFile(`uploads/${file.filename}`);
+            if (meta.format.duration > 18) {
+              return rep.status(400).send("Music too long.");
+            }
+          }
+        } catch (error) {
+          log(error);
+          return rep.status(400).send((error as Error).message);
+        }
+        try {
           const fileMap = await ossPut(ossClient, req.files);
           return rep.send(fileMap);
         } catch (error) {
           log(error);
-          return rep.status(500).send(error);
+          return rep.status(400).send(`Put Music Failed`);
         }
       }
     );
