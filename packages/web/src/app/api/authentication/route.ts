@@ -9,6 +9,6 @@ export async function GET(request: Request) {
     });
   }
   return NextResponse.json({
-    role: "nobody",
+    role: token,
   });
 }

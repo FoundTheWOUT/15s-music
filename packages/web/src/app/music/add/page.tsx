@@ -17,6 +17,9 @@ type MusicInput = {
 
   file?: any; //file
   cover?: any; //file
+
+  coverPreview?: string;
+  audioPreview?: string;
 };
 
 const musicInputAtom = atom<MusicInput>({
@@ -98,16 +101,33 @@ function AddMusic() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       {musics.map((music, idx) => (
-        <div key={music.nanoId}>
+        <div
+          key={music.nanoId}
+          className="relative flex flex-col gap-2 rounded-lg border p-4"
+        >
           <div>name: {music.name}</div>
           <div>author:{music.authors.join("/")}</div>
+          <div>
+            <div>cover:</div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="h-32" src={music.coverPreview} alt="" />
+          </div>
+          <div>
+            <span>15s: </span>
+            <audio controls className="inline-block">
+              <source src={music.audioPreview} />
+            </audio>
+          </div>
           <TrashIcon
-            className="w-5 text-red-500"
+            className="absolute top-0 right-0 m-4 w-5 cursor-pointer text-red-500"
             onClick={() => {
               setMusics((musics) => {
                 const nextMusics = [...musics];
+                const target = nextMusics[idx];
+                target.coverPreview && URL.revokeObjectURL(target.coverPreview);
+                target.audioPreview && URL.revokeObjectURL(target.audioPreview);
                 nextMusics.splice(idx, 1);
                 return nextMusics;
               });
@@ -128,7 +148,7 @@ function AddMusic() {
         />
         <Select
           mode="tags"
-          className="w-36"
+          className="flex-1"
           open={false}
           value={musicInput.authors}
           onChange={(value) => {
@@ -150,7 +170,7 @@ function AddMusic() {
           fileList={musicInput.file ? [musicInput.file] : []}
           maxCount={1}
         >
-          <Button>15S</Button>
+          <Button className="w-24">15S</Button>
         </Upload>
 
         {/* cover */}
@@ -165,14 +185,19 @@ function AddMusic() {
           fileList={musicInput.cover ? [musicInput.cover] : []}
           maxCount={1}
         >
-          <Button>封面</Button>
+          <Button className="w-24">封面</Button>
         </Upload>
         {musics.length < 20 && (
           <Button
             onClick={() => {
               setMusics((musics) => [
                 ...musics,
-                { ...musicInput, nanoId: nanoid() },
+                {
+                  ...musicInput,
+                  coverPreview: URL.createObjectURL(musicInput.cover),
+                  audioPreview: URL.createObjectURL(musicInput.file),
+                  nanoId: nanoid(),
+                },
               ]);
               setMusicInput(musicInputAtom.init);
             }}
@@ -181,7 +206,11 @@ function AddMusic() {
           </Button>
         )}
       </div>
-      <Button onClick={handleSubmit} disabled={!musics.length}>
+      <Button
+        className="mt-2 ml-auto"
+        onClick={handleSubmit}
+        disabled={!musics.length}
+      >
         提交
       </Button>
     </div>
@@ -190,7 +219,7 @@ function AddMusic() {
 
 function AddMusicPage() {
   return (
-    <AuthenticationGuard>
+    <AuthenticationGuard allowGuest>
       <AddMusic />
     </AuthenticationGuard>
   );
