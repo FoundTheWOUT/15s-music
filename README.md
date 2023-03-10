@@ -1,11 +1,9 @@
-<center>
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="48" cy="48" r="48" fill="black"/>
-<circle cx="45.5" cy="66.5" r="14.5" fill="white"/>
-<path d="M54.5 61L31 22.1045C49 12.1045 62.8333 18.6045 68 22.1045" stroke="white" stroke-width="7" stroke-linecap="square"/>
-</svg>
-<h1>15S-MUSIC</h1>
-<h4>
+<h1 align="center">
+<img src="./resource/icon.png"/>
+<br>
+15S-MUSIC
+</h1>
+<h4 align="center">
 15S听一首歌，快速Pick到你所喜欢的音乐。立即访问 <a href="https://15s-music-web.drawki.top/" target="_blank">15s-music</a> 吧
 </h4>
 </center>
