@@ -11,6 +11,7 @@ import { autoPlayAtom, likedSongAtom } from "@/state";
 import { playEvent } from "./MusicList";
 import { useDebounce } from "@/hooks";
 import { STATIC_HOST } from "../../const";
+import PlayAndPause from "./PlayAndPause";
 
 const player = new MusicPlayer();
 
@@ -102,20 +103,28 @@ function Music15sPlayer({ music }: { music: Music }) {
       onMouseLeave={handleMouseLeave}
     >
       <div className="relative inset-0 z-10 flex h-full items-center justify-center gap-4">
-        {!autoPlay &&
-          (paused ? (
-            <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
-              <PlayIcon
-                className="translate-x-[2px] text-gray-500"
-                onClick={() => play()}
-              />
-            </div>
-          ) : (
-            <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
-              <PauseIcon className=" text-gray-500" onClick={() => pause()} />
-            </div>
-          ))}
-        <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
+        {
+          !autoPlay && (
+            <PlayAndPause
+              className="w-10 opacity-0 transition-opacity group-hover/music:opacity-100"
+              paused={paused}
+              onClick={() => (paused ? play() : pause())}
+            />
+          )
+          // (paused ? (
+          //   <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
+          //     <PlayIcon
+          //       className="translate-x-[2px] text-gray-500"
+          //       onClick={() => play()}
+          //     />
+          //   </div>
+          // ) : (
+          //   <div className="icon opacity-0 transition-opacity group-hover/music:opacity-100">
+          //     <PauseIcon className=" text-gray-500" onClick={() => pause()} />
+          //   </div>
+          // ))
+        }
+        <div className="icon w-10 opacity-0 transition-opacity group-hover/music:opacity-100">
           <HeartIcon
             className={cn(
               "translate-y-[1px]",

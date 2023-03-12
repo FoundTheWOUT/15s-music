@@ -57,11 +57,13 @@ importers:
   packages/web:
     specifiers:
       '@15s-music/server': workspace:*
+      '@ant-design/cssinjs': ^1.6.1
       '@headlessui/react': ^1.7.12
       '@heroicons/react': ^2.0.16
       '@types/ali-oss': ^6.16.7
       '@types/react': 18.0.28
       '@types/react-dom': 18.0.11
+      '@types/wavesurfer.js': ^6.0.3
       ali-oss: ^6.17.1
       antd: ^5.2.3
       autoprefixer: ^10.4.13
@@ -78,7 +80,9 @@ importers:
       swr: ^2.0.4
       tailwindcss: ^3.2.7
       typescript: 4.9.5
+      wavesurfer.js: ^6.5.0
     dependencies:
+      '@ant-design/cssinjs': 1.6.1_biqbaboplfbrettd7655fr4n2y
       '@headlessui/react': 1.7.12_biqbaboplfbrettd7655fr4n2y
       '@heroicons/react': 2.0.16_react@18.2.0
       ali-oss: 6.17.1
@@ -93,11 +97,13 @@ importers:
       swr: 2.0.4_react@18.2.0
       tailwindcss: 3.2.7_postcss@8.4.21
       typescript: 4.9.5
+      wavesurfer.js: 6.5.0
     devDependencies:
       '@15s-music/server': link:../server
       '@types/ali-oss': 6.16.7
       '@types/react': 18.0.28
       '@types/react-dom': 18.0.11
+      '@types/wavesurfer.js': 6.0.3
       autoprefixer: 10.4.13_postcss@8.4.21
       postcss: 8.4.21
       prettier: 2.8.4
@@ -111,8 +117,8 @@ packages:
       '@ctrl/tinycolor': 3.6.0
     dev: false
 
-  /@ant-design/cssinjs/1.6.0_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-QSGz+Tk7P+oqywv+K5yNI6cX32iYBNrn5+OTKs7drrNj5fiXzo+7BOALnWSPHeq4ykcec9gb1JGLGMPeFnWk7w==}
+  /@ant-design/cssinjs/1.6.1_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-35+1e5h1HzPt7d7NjXTG5yg/OQY85YcOIpb3peB3/eKri7+0mW9c+WZB3In7yMscBzvxQREOR5pxNDbqMcI42w==}
     peerDependencies:
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
@@ -507,6 +513,10 @@ packages:
       '@types/node': 18.14.1
     dev: true
 
+  /@types/debounce/1.2.1:
+    resolution: {integrity: sha512-epMsEE85fi4lfmJUH/89/iV/LI+F5CvNIvmgs5g5jYFPfhO2S/ae8WSsLOKWdwtoaZw9Q2IhJ4tQ5tFCcS/4HA==}
+    dev: true
+
   /@types/express-serve-static-core/4.17.33:
     resolution: {integrity: sha512-TPBqmR/HRYI3eC2E5hmiivIzv+bidAfXofM+sbonAGvyDhySGw9/PQZFt2BLOrjUUR++4eJVpx6KnLQK1Fk9tA==}
     dependencies:
@@ -587,6 +597,12 @@ packages:
 
   /@types/uuid/9.0.1:
     resolution: {integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==}
+    dev: true
+
+  /@types/wavesurfer.js/6.0.3:
+    resolution: {integrity: sha512-5Sb5s3pEkOmDosaaP1DWp1Unnx8HhVorm5608TIVdT5jCMvJ6eqM19UD8n7DEbJ7rzreS9RqHmzR8TlcdQBvbA==}
+    dependencies:
+      '@types/debounce': 1.2.1
     dev: true
 
   /@typescript-eslint/parser/5.53.0_7kw3g6rralp5ps6mg3uyzz6azm:
@@ -782,7 +798,7 @@ packages:
       react-dom: '>=16.9.0'
     dependencies:
       '@ant-design/colors': 7.0.0
-      '@ant-design/cssinjs': 1.6.0_biqbaboplfbrettd7655fr4n2y
+      '@ant-design/cssinjs': 1.6.1_biqbaboplfbrettd7655fr4n2y
       '@ant-design/icons': 5.0.1_biqbaboplfbrettd7655fr4n2y
       '@ant-design/react-slick': 1.0.0_react@18.2.0
       '@babel/runtime': 7.21.0
@@ -5192,6 +5208,10 @@ packages:
     dependencies:
       acorn: 8.8.2
       acorn-walk: 8.2.0
+    dev: false
+
+  /wavesurfer.js/6.5.0:
+    resolution: {integrity: sha512-h7T0iRvIbEtEL87/5GqGK8H0usGkodRq989PaPfQ452+idolbxtT8G8Pdi9XvSBNfLz48l05o3EYwH7UB5h1ig==}
     dev: false
 
   /which-boxed-primitive/1.0.2:

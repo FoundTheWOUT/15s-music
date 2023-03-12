@@ -4,6 +4,6 @@
 
 @layer components {
   .icon {
-    @apply w-10 cursor-pointer rounded-full bg-white p-1;
+    @apply cursor-pointer rounded-full bg-white/90 p-1;
   }
 }

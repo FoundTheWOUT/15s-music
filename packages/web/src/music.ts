@@ -1,4 +1,5 @@
 export type { Music } from "@15s-music/server/src/entry";
+import jsmediatags from "@/compiled/jsmediatags.min";
 
 // 定义一个函数，将一个数值从一个范围映射到另一个范围
 function map(
@@ -14,14 +15,31 @@ function map(
 
 const FFT_SIZE = 512;
 
+export const loadAudioMetaData = (blob: Blob) => {
+  return new Promise<any>(async (resolve, reject) => {
+    jsmediatags.read(blob, {
+      onSuccess: function (tag: any) {
+        resolve(tag);
+        // let image = tag.tags.picture;
+        // console.log(tag);
+      },
+      onError: function (error: unknown) {
+        reject(error);
+      },
+    });
+  });
+};
+
 export const checkAudioLength = (url: string) => {
   return new Promise((resolve, reject) => {
     const audio = new Audio();
     audio.src = url;
-    audio.addEventListener("loadedmetadata", (e) => {
+    const resolver = () => {
+      audio.removeEventListener("loadedmetadata", resolver);
       if (audio.duration <= 18) resolve(true);
       resolve(false);
-    });
+    };
+    audio.addEventListener("loadedmetadata", resolver);
     audio.addEventListener("error", reject);
   });
 };
