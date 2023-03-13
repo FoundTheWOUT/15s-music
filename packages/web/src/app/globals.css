@@ -4,6 +4,10 @@
 
 @layer components {
   .icon {
-    @apply cursor-pointer rounded-full bg-white/90 p-1;
+    @apply cursor-pointer rounded-full bg-white p-1;
+  }
+
+  .btn {
+    @apply cursor-pointer shadow active:shadow-none;
   }
 }

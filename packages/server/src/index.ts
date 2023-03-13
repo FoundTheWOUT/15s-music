@@ -12,6 +12,7 @@ import { musicRoute } from "./routes/music";
 import { getAppContext } from "./ctx";
 import { auth } from "./middleware/authentication";
 import { parseFile, parseBuffer } from "music-metadata";
+import crypto from "crypto";
 
 const VERSION = process.env.Version;
 const ENABLE_OSS = process.env.ENABLE_OSS
@@ -27,11 +28,31 @@ log("environment:", isProd ? "production" : "other");
 const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
 dotenv.config({ path: dotenvPath });
 
+function generateFilename(): Promise<string> {
+  return new Promise((res, rej) => {
+    crypto.randomBytes(16, function (err, raw) {
+      if (err) rej(err);
+      res(raw.toString("hex"));
+    });
+  });
+}
+
 const upload = multer({
   storage: ENABLE_OSS
     ? multer.memoryStorage()
     : multer.diskStorage({
         destination: "uploads/",
+        async filename(req, file, cb) {
+          const namePath = file.originalname.split(":");
+          console.log(namePath);
+          if (namePath.length === 2) {
+            return cb(null, namePath[1]);
+          }
+          return cb(
+            new Error("file name should like: [id]/[filename.ext]"),
+            await generateFilename()
+          );
+        },
       }),
 });
 
@@ -58,17 +79,17 @@ const ossPut = async (
   try {
     const entry = await Promise.all(
       files.map(async (file) => {
-        const id = file.originalname;
-        const name = ENABLE_OSS
-          ? filenameFormatter
-            ? filenameFormatter(id)
-            : id
-          : file.filename;
+        const [id, filename] = file.originalname.split(":");
+        // const name = ENABLE_OSS
+        //   ? filenameFormatter
+        //     ? filenameFormatter(id)
+        //     : id
+        //   : file.filename;
 
         if (ENABLE_OSS) {
-          await client.put(name, file.buffer);
+          await client.put(filename, file.buffer);
         }
-        return [id, name];
+        return [id, filename];
       })
     );
     return Object.fromEntries(entry);
@@ -114,6 +135,63 @@ async function bootstrap() {
     });
 
     app.post(
+      "/upload/once",
+      upload.fields([
+        { name: "audio", maxCount: 20 },
+        { name: "cover", maxCount: 20 },
+      ]),
+      async function (req, rep) {
+        let { audio = [], cover = [] } = req.files as {
+          audio: Express.Multer.File[];
+          cover: Express.Multer.File[];
+        };
+        // const waitingPutFileQueue: Express.Multer.File[] = audio;
+        // sharp image
+        // image webp.
+        try {
+          cover = await Promise.all(
+            cover.map(async (file) => {
+              return {
+                ...file,
+                buffer: file.buffer && (await sharpImageToWebp(file.buffer)),
+              } as Express.Multer.File;
+            })
+          );
+          // waitingPutFileQueue.push(...imageFiles);
+
+          // check audio length
+          // audio is mp3 file.
+          for (const file of audio) {
+            const meta = file.buffer
+              ? await parseBuffer(file.buffer)
+              : await parseFile(`uploads/${file.filename}`);
+            const duration = Math.floor(meta.format.duration);
+            if (duration > 18) {
+              return rep
+                .status(400)
+                .send(
+                  `Music ${
+                    meta.common.title ?? ""
+                  } too long. Uploading ${duration}s, but expect 15s`
+                );
+            }
+          }
+        } catch (error) {
+          log(error);
+          return rep.status(400).send(error);
+        }
+
+        const audioMap = await ossPut(ossClient, audio);
+        const coverMap = await ossPut(ossClient, cover);
+        return rep.send({
+          audio: audioMap,
+          cover: coverMap,
+        });
+      }
+    );
+
+    // image
+    app.post(
       "/upload/image",
       auth({ allowGuest: true }),
       webpUpload.array("file", 20),
@@ -123,7 +201,7 @@ async function bootstrap() {
         }
         try {
           // sharp image
-          const files: Express.Multer.File[] = await Promise.all(
+          const files = await Promise.all(
             req.files.map(async (file) => {
               return {
                 ...file,
@@ -144,6 +222,7 @@ async function bootstrap() {
       }
     );
 
+    // audio
     app.post(
       "/upload/song",
       auth({ allowGuest: true }),

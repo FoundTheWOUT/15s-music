@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Select, Input, Button, Upload, message, Form, Divider } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
@@ -9,11 +9,29 @@ import {
   ArrowUturnUpIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { checkAudioLength, loadAudioMetaData, Music } from "@/music";
+import {
+  checkAudioLength,
+  loadAudioMetaData,
+  Music,
+  MusicPlayer,
+} from "@/music";
 import AuthenticationGuard from "../../components/AuthenticationGuard";
 import { tokenAtom } from "@/state";
 import { StyleProvider } from "@ant-design/cssinjs";
 import AudioEditor from "../../components/AudioEditor";
+import WaveSurfer from "wavesurfer.js";
+// import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import crypto from "crypto";
+
+function generateFilename(): Promise<string> {
+  return new Promise((res, rej) => {
+    crypto.randomBytes(16, function (err, raw) {
+      if (err) rej(err);
+      res(raw.toString("hex"));
+    });
+  });
+}
 
 type MusicInput = {
   nanoId: string;
@@ -28,6 +46,8 @@ type MusicInput = {
 
   audioPreview?: string;
   audioPreviewBlob?: Blob;
+
+  wavesurferRef?: WaveSurfer;
 };
 
 const musicInputAtom = atom<MusicInput>({
@@ -36,57 +56,105 @@ const musicInputAtom = atom<MusicInput>({
   authors: [],
 });
 
+let ffmpeg: FFmpeg | null = null;
+const cutAudio = async (id: string, blob: Blob, start: number, end: number) => {
+  const {
+    default: { createFFmpeg, fetchFile },
+  } = await import("@/compiled/ffmpeg.min.js");
+  if (!ffmpeg) {
+    ffmpeg = createFFmpeg({
+      log: true,
+    }) as FFmpeg;
+    await ffmpeg.load();
+  }
+  ffmpeg.FS("writeFile", `${id}-in.mp3`, await fetchFile(blob));
+  await ffmpeg.run(
+    "-i",
+    `${id}-in.mp3`,
+    "-ss",
+    start.toString(),
+    "-to",
+    end.toString(),
+    `${id}-out.mp3`
+  );
+  const data = ffmpeg.FS("readFile", `${id}-out.mp3`);
+  return new Blob([data.buffer], { type: "audio/mp3" });
+};
+
 function AddMusic() {
   const [musics, setMusics] = useState<MusicInput[]>([]);
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
   const [token] = useAtom(tokenAtom);
+  const editorRefs = useRef<any[]>([]);
+
+  useEffect(() => {
+    editorRefs.current = editorRefs.current.slice(0, musics.length);
+  }, [musics.length]);
 
   const handleSubmit = async () => {
     if (!musics.length) return;
-    const songs = new FormData();
-    const covers = new FormData();
-    for (const music of musics) {
+    const form = new FormData();
+    for (let index = 0; index < musics.length; index++) {
+      const music = musics[index];
       // if (!music.file || !music.cover) {
       //   console.log("must file/cover");
       //   return;
       // }
+      const editorRef = editorRefs.current[index];
+      if (editorRef.wavesurferRef) {
+        const wavesurfer = editorRef.wavesurferRef.current as WaveSurfer;
+        const regions = Object.values(wavesurfer.regions.list ?? {});
+        if (regions.length) {
+          const { start, end } = regions[0];
+          try {
+            // TODO: muti thread!
+            const cutBlob = await cutAudio(
+              music.nanoId,
+              music.file,
+              start,
+              end
+            );
+            const filename = await generateFilename();
+            form.append(
+              "audio",
+              new File([cutBlob], `${music.nanoId}:${filename}.mp3`)
+            );
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      }
 
-      songs.append("file", new File([music.file], music.nanoId));
-      covers.append("file", new File([music.cover], music.nanoId));
+      form.append(
+        "cover",
+        new File(
+          [music.cover],
+          `${music.nanoId}:${await generateFilename()}.webp`
+        )
+      );
     }
 
     try {
       // return map of nanoid to file src
-      const [songFileMap, coverFileMap] = await Promise.all([
-        // song
-        fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/song`, {
+      const fileMap = await fetch(
+        `${process.env.NEXT_PUBLIC_API_GATE}/upload/once`,
+        {
           method: "POST",
           headers: {
             authorization: `Basic ${token}`,
           },
-          body: songs,
-        }).then((res) => {
-          if (res.ok) return res.json();
-          throw new Error("reason");
-        }),
-        // cover
-        fetch(`${process.env.NEXT_PUBLIC_API_GATE}/upload/image`, {
-          method: "POST",
-          headers: {
-            authorization: `Basic ${token}`,
-          },
-          body: covers,
-        }).then((res) => {
-          if (res.ok) return res.json();
-          throw new Error("reason");
-        }),
-      ]);
+          body: form,
+        }
+      ).then((res) => {
+        if (res.ok) return res.json();
+        message.error("Upload fail...");
+      });
 
       const musicsSchema: Partial<Music>[] = musics.map((music) => ({
         name: music.name,
         authors: music.authors,
-        cover_src: coverFileMap[music.nanoId],
-        song_15s_src: songFileMap[music.nanoId],
+        cover_src: fileMap.cover[music.nanoId],
+        song_15s_src: fileMap.audio[music.nanoId],
         albums: music.albums ?? music.name,
       }));
 
@@ -195,6 +263,7 @@ function AddMusic() {
               <div className="flex-1">
                 {music.audioPreviewBlob && (
                   <AudioEditor
+                    ref={(ref) => (editorRefs.current[idx] = ref)}
                     id={music.nanoId}
                     blob={music.audioPreviewBlob}
                   />
@@ -203,8 +272,10 @@ function AddMusic() {
             </div>
 
             <TrashIcon
-              className="absolute top-0 right-0 m-4 w-5 cursor-pointer rounded text-red-500"
+              className="btn icon absolute top-0 right-0 m-4 w-6 cursor-pointer rounded text-red-500"
               onClick={() => {
+                // ! destroy wavesurfer here
+                music.wavesurferRef?.destroy();
                 setMusics((musics) => {
                   const nextMusics = [...musics];
                   const target = nextMusics[idx];
@@ -222,9 +293,12 @@ function AddMusic() {
 
         {musics.length > 0 && (
           <>
-            <Button onClick={handleSubmit} type="primary">
+            <button
+              className="btn rounded bg-primary py-2 font-bold text-white"
+              onClick={handleSubmit}
+            >
               提交
-            </Button>
+            </button>
 
             <Divider />
           </>

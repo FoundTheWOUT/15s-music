@@ -11,6 +11,17 @@ const nextConfig = {
       "15-music.oss-cn-guangzhou.aliyuncs.com",
     ],
   },
+  async headers() {
+    return [
+      {
+        source: "/music/add",
+        headers: [
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

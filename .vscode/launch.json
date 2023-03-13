@@ -6,7 +6,7 @@
   "configurations": [
     {
       "command": "pnpm serve-dev",
-      "name": "Start server",
+      "name": "Run server",
       "request": "launch",
       "type": "node-terminal"
     },

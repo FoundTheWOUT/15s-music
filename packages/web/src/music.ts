@@ -70,14 +70,19 @@ export class MusicPlayer {
     }
   }
 
-  play(buffer: ArrayBuffer) {
+  play(input: ArrayBuffer | Blob) {
     this.setupCtx();
     return new Promise(async (res, rej) => {
       if (!this.audio) {
         rej("Audio not init");
         return;
       }
-      const blob = new Blob([buffer], { type: "audio/mp3" });
+
+      const blob =
+        input instanceof Blob
+          ? input
+          : new Blob([input], { type: "audio/mp3" });
+
       if (this.audio?.src) {
         URL.revokeObjectURL(this.audio.src);
       }

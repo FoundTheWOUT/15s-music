@@ -1,44 +1,86 @@
 "use client";
 
+import { ArrowPathRoundedSquareIcon } from "@heroicons/react/24/solid";
 import {
+  forwardRef,
   useEffect,
-  useLayoutEffect,
+  useImperativeHandle,
   useRef,
   useState,
   WheelEventHandler,
 } from "react";
-import WaveSurfer from "wavesurfer.js";
-import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions";
 import PlayAndPause from "./PlayAndPause";
 
-function AudioEditor({ blob, id }: { blob: Blob; id: string }) {
-  const [count, setCount] = useState(0);
+const AudioEditor = forwardRef(function AudioEditor(
+  { blob, id }: { blob: Blob; id: string },
+  ref
+) {
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const wavesurferDivRef = useRef<HTMLDivElement | null>(null);
   const [paused, setPaused] = useState(true);
-  useLayoutEffect(() => {
-    // wavesurfer
-    if (!wavesurferRef.current) {
-      const wavesurfer = (wavesurferRef.current = WaveSurfer.create({
-        container: `#${id}`,
-        waveColor: "rgb(252 103 103 / 0.3)",
-        progressColor: "#fc6767",
-        plugins: [RegionsPlugin.create()],
-      }));
-      wavesurfer.loadBlob(blob);
-      wavesurfer.once("ready", () => {
-        const duration = wavesurfer.getDuration();
-        if (duration > 18) {
-          console.log("add plugin");
-          wavesurfer.addRegion({
-            start: 0,
-            end: 18,
-            minLength: 10,
-            maxLength: 20,
-            color: "hsla(400, 100%, 30%, 0.1)",
-          });
-        }
-      });
-    }
+
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        wavesurferRef,
+      };
+    },
+    []
+  );
+
+  useEffect(() => {
+    console.log('hi');
+    const handleResize = () => {
+      const width = wavesurferDivRef.current?.clientWidth;
+      // console.log(wavesurferRef.current?.drawer);
+      wavesurferRef.current?.drawer?.updateSize();
+    };
+    console.log("mount resize");
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const run = async () => {
+      const { default: WaveSurfer } = await import("wavesurfer.js");
+      const { default: RegionsPlugin } = await import(
+        "wavesurfer.js/dist/plugin/wavesurfer.regions.js"
+      );
+      if (!wavesurferRef.current && wavesurferDivRef.current) {
+        const wavesurfer = (wavesurferRef.current = WaveSurfer.create({
+          container: wavesurferDivRef.current,
+          waveColor: "rgb(252 103 103 / 0.3)",
+          progressColor: "#fc6767",
+          plugins: [RegionsPlugin.create()],
+        }));
+        wavesurfer.loadBlob(blob);
+        wavesurfer.once("ready", () => {
+          const duration = wavesurfer.getDuration();
+          if (duration > 18) {
+            wavesurfer.addRegion({
+              start: 0,
+              end: 18,
+              minLength: 10,
+              maxLength: 20,
+              color: "hsla(400, 100%, 30%, 0.1)",
+            });
+          }
+        });
+      }
+    };
+    run();
+    return () => {
+      // ! we do not destroy wavesurfer instance here
+      // ! but before the editor list state updated
+      // ! otherwise, wavesurfer would not get the element
+      // ! and causing error.
+      // wavesurferRef.current?.destroy()
+      wavesurferRef.current = null;
+    };
   }, []);
 
   //   TODO: listen on wheel event in non passive.
@@ -51,34 +93,43 @@ function AudioEditor({ blob, id }: { blob: Blob; id: string }) {
     return false;
   };
 
-  const play = () => {
-    if (!wavesurferRef.current) return;
-    const regions = Object.values(wavesurferRef.current.regions.list ?? {});
+  const regions = Object.values(wavesurferRef.current?.regions.list ?? {});
+  const playFromRegionHead = () => {
     if (regions.length) {
       const region = regions[0];
       region.playLoop();
-      return;
-    } else {
-      wavesurferRef.current?.play();
     }
+    setPaused(false);
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <div id={id}></div>
+      <div className="h-32" ref={wavesurferDivRef}></div>
       {/* control */}
-      <div className="self-center rounded bg-primary/20 p-2">
+      <div className="flex gap-2 self-center rounded bg-primary/80 p-2">
         <PlayAndPause
-          className="w-5"
+          title="播放/暂停"
+          className="w-6"
           paused={paused}
           onClick={() => {
-            paused ? play() : wavesurferRef.current?.pause();
+            paused
+              ? wavesurferRef.current?.play()
+              : wavesurferRef.current?.pause();
             setPaused(!paused);
           }}
         />
+        {regions.length > 0 && (
+          <ArrowPathRoundedSquareIcon
+            className="icon btn w-6 group-hover:hidden"
+            title="区间循环播放"
+            onClick={() => {
+              playFromRegionHead();
+            }}
+          />
+        )}
       </div>
     </div>
   );
-}
+});
 
 export default AudioEditor;

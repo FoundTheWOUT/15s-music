@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.6.1",
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.11.6",
     "@headlessui/react": "^1.7.12",
     "@heroicons/react": "^2.0.16",
     "ali-oss": "^6.17.1",
@@ -18,6 +20,7 @@
     "eslint": "8.34.0",
     "eslint-config-next": "13.2.1",
     "jotai": "^2.0.2",
+    "lamejs": "zhuker/lamejs",
     "next": "13.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
