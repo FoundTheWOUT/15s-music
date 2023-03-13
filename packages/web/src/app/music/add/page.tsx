@@ -4,7 +4,11 @@ import { useState } from "react";
 import { Select, Input, Button, Upload, message, Form, Divider } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowUpOnSquareIcon,
+  ArrowUturnUpIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { checkAudioLength, loadAudioMetaData, Music } from "@/music";
 import AuthenticationGuard from "../../components/AuthenticationGuard";
 import { tokenAtom } from "@/state";
@@ -23,7 +27,7 @@ type MusicInput = {
   coverPreview?: string;
 
   audioPreview?: string;
-  audioPreviewBlob?: any; //File | Blob
+  audioPreviewBlob?: Blob;
 };
 
 const musicInputAtom = atom<MusicInput>({
@@ -170,24 +174,36 @@ function AddMusic() {
         {musics.map((music, idx) => (
           <div
             key={music.nanoId}
-            className="relative flex flex-col gap-2 rounded-lg border p-4"
+            className="relative flex flex-col gap-2 rounded-lg border border-primary p-4"
           >
-            <div>name: {music.name}</div>
-            <div>artist:{music.authors.join("/")}</div>
+            {/* header */}
             <div>
-              <div>cover:</div>
+              <div className="font-bold">{music.name}</div>
+              <div className="text-sm text-gray-500">
+                {music.authors.join("/")}
+              </div>
+            </div>
+
+            {/* cover & previewer */}
+            <div className="flex gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="h-32" src={music.coverPreview} alt="" />
+              <img
+                className="h-32 rounded-lg shadow-xl"
+                src={music.coverPreview}
+                alt=""
+              />
+              <div className="flex-1">
+                {music.audioPreviewBlob && (
+                  <AudioEditor
+                    id={music.nanoId}
+                    blob={music.audioPreviewBlob}
+                  />
+                )}
+              </div>
             </div>
-            <div>
-              <span>15s: </span>
-              <AudioEditor id={music.nanoId} blob={music.audioPreviewBlob} />
-              {/* <audio controls className="inline-block">
-                <source src={music.audioPreview} />
-              </audio> */}
-            </div>
+
             <TrashIcon
-              className="absolute top-0 right-0 m-4 w-5 cursor-pointer text-red-500"
+              className="absolute top-0 right-0 m-4 w-5 cursor-pointer rounded text-red-500"
               onClick={() => {
                 setMusics((musics) => {
                   const nextMusics = [...musics];
@@ -247,7 +263,7 @@ function AddMusic() {
 
           {/* song */}
           <Form.Item label="song">
-            <Upload
+            <Upload.Dragger
               beforeUpload={handleSongUpload}
               fileList={musicInput.file ? [musicInput.file] : []}
               maxCount={1}
@@ -259,13 +275,22 @@ function AddMusic() {
                 }));
               }}
             >
-              <Button className="w-24">15S</Button>
-            </Upload>
+              <div className="mx-auto">
+                <ArrowUpOnSquareIcon className="mx-auto w-12 text-[#3875f6]" />
+                <p className="mt-3 font-bold text-[#3875f6]">上传15秒音乐</p>
+                <p className="text-xs text-gray-500">
+                  可以上传完整音乐进行后续裁剪
+                </p>
+                <p className="text-xs text-gray-500">
+                  如果音乐文件自带封面，作者等信息会自动填写表单哦
+                </p>
+              </div>
+            </Upload.Dragger>
           </Form.Item>
 
           {/* cover */}
           <Form.Item label="cover">
-            <Upload
+            <Upload.Dragger
               beforeUpload={(file) => {
                 setMusicInput((preInput) => ({
                   ...preInput,
@@ -282,8 +307,11 @@ function AddMusic() {
                 }));
               }}
             >
-              <Button className="w-24">封面</Button>
-            </Upload>
+              <div className="mx-auto">
+                <ArrowUpOnSquareIcon className="mx-auto w-12 text-[#3875f6]" />
+                <p className="mt-3 font-bold text-[#3875f6]">上传封面</p>
+              </div>
+            </Upload.Dragger>
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 2 }}>
@@ -297,6 +325,14 @@ function AddMusic() {
             <span className="ml-2 align-bottom text-xs text-gray-500">
               {musics.length}/20
             </span>
+            <Button
+              className="ml-2"
+              onClick={() => {
+                setMusicInput(musicInputAtom.init);
+              }}
+            >
+              重置
+            </Button>
           </Form.Item>
         </Form>
       </div>
