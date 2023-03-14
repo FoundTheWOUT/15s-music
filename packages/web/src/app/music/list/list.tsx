@@ -1,4 +1,4 @@
-import { Music } from "@/music";
+import { Music } from "@/utils/music";
 
 async function MusicList() {
   const data: { musics: Music[] } = await fetch(

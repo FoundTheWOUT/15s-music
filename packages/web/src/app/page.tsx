@@ -1,7 +1,7 @@
 // import { Inter } from "next/font/google";
 import MusicList from "./components/MusicList";
 import Music15sPlayer from "./components/Music15sPlayer";
-import { Music } from "@/music";
+import { Music } from "@/utils/music";
 import { PAGE_SIZE } from "@/const";
 
 // const inter = Inter({ subsets: ["latin"] });

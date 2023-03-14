@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Select, Input, Button, Upload, message, Form, Divider } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { ArrowUpOnSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { loadAudioMetaData, Music } from "@/music";
+import { loadAudioMetaData, Music } from "@/utils/music";
 import { StyleProvider } from "@ant-design/cssinjs";
 import AudioEditor from "../../components/AudioEditor";
 import WaveSurfer from "wavesurfer.js";

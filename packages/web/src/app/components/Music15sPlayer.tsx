@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import useSWRMutation from "swr/mutation";
-import { Music, MusicPlayer } from "../../music";
+import { Music, MusicPlayer } from "../../utils/music";
 import { HeartIcon, PauseIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import cn from "classnames";
