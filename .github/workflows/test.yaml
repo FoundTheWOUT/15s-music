@@ -1,0 +1,33 @@
+name: Deploy test stage Node.js app
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Run deploy"
+        required: false
+  push:
+    branches: [test]
+    paths:
+      - "packages/server/**/*.ts"
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Deploy server
+        uses: appleboy/ssh-action@master # 使用第三方操作来执行 SSH 命令
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script_stop: true
+          script: | # test stage
+            cd /root/15s-music-test
+            git checkout -b test
+            git pull origin test
+            sudo docker-compose build --build-arg version=$(git rev-parse --short HEAD)
+            sudo docker-compose up -d --no-deps server
