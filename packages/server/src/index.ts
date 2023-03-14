@@ -257,6 +257,7 @@ async function bootstrap() {
             {
               key: readFileSync(process.env.SSL_KEY_PATH),
               cert: readFileSync(process.env.SSL_CERT_PATH),
+              ca: readFileSync(process.env.SSL_CA_PATH),
             },
             app
           )
