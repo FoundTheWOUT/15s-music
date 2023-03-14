@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import useSWRMutation from "swr/mutation";
-import { Music, MusicPlayer } from "../../utils/music";
+import { Music } from "../../utils/music";
+import { MusicPlayer } from "../../utils/MuiscPlayer";
 import { HeartIcon, PauseIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import cn from "classnames";
@@ -125,9 +126,7 @@ function Music15sPlayer({ music }: { music: Music }) {
         className="transition-[filter] group-hover/music:blur"
         src={
           music.cover_src
-            ? music.cover_src.startsWith("local")
-              ? `${STATIC_HOST}/${music.cover_src}`
-              : `${process.env.NEXT_PUBLIC_OSS}/${music.cover_src}`
+            ? `${STATIC_HOST}/${music.cover_src}`
             : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         }
         fill

@@ -5,12 +5,11 @@ import { Select, Input, Button, Upload, message, Form, Divider } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
 import { ArrowUpOnSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { loadAudioMetaData, Music } from "@/utils/music";
+import { cutAudio, loadAudioMetaData, Music } from "@/utils/music";
 import { StyleProvider } from "@ant-design/cssinjs";
 import AudioEditor from "../../components/AudioEditor";
 import WaveSurfer from "wavesurfer.js";
 // import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import { generateFilename } from "@/utils";
 
 type MusicInput = {
@@ -36,32 +35,7 @@ const musicInputAtom = atom<MusicInput>({
   authors: [],
 });
 
-let ffmpeg: FFmpeg | null = null;
-const cutAudio = async (id: string, blob: Blob, start: number, end: number) => {
-  const {
-    default: { createFFmpeg, fetchFile },
-  } = await import("@/compiled/ffmpeg.min.js");
-  if (!ffmpeg) {
-    ffmpeg = createFFmpeg({
-      log: true,
-      // TODO
-      //corePath:new URL('static/js/ffmpeg-core.js', document.location).href
-    }) as FFmpeg;
-    await ffmpeg.load();
-  }
-  ffmpeg.FS("writeFile", `${id}-in.mp3`, await fetchFile(blob));
-  await ffmpeg.run(
-    "-i",
-    `${id}-in.mp3`,
-    "-ss",
-    start.toString(),
-    "-to",
-    end.toString(),
-    `${id}-out.mp3`
-  );
-  const data = ffmpeg.FS("readFile", `${id}-out.mp3`);
-  return new Blob([data.buffer], { type: "audio/mp3" });
-};
+
 
 function AddMusic() {
   const [musics, setMusics] = useState<MusicInput[]>([]);
