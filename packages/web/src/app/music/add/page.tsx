@@ -98,8 +98,10 @@ function AddMusic() {
         );
       }
     } catch (error) {
+      // I will return
       console.error(error);
       message.error("裁剪失败");
+      setLoading(false);
       return;
     }
 
@@ -139,7 +141,7 @@ function AddMusic() {
     } catch (error) {
       console.error(error);
     }
-    setLoading(true);
+    setLoading(false);
   };
 
   const handleMusicAppend = async () => {

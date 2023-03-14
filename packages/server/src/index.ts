@@ -5,7 +5,7 @@ import cors from "cors";
 import OSS from "ali-oss";
 import * as dotenv from "dotenv";
 import { resolve } from "path";
-import { isProd } from "./const";
+import { ENABLE_HTTPS, ENABLE_OSS, isProd, VERSION } from "./const";
 import { log } from "./utils";
 import sharp from "sharp";
 import { musicRoute } from "./routes/music";
@@ -13,13 +13,8 @@ import { getAppContext } from "./ctx";
 import { auth } from "./middleware/authentication";
 import { parseFile, parseBuffer } from "music-metadata";
 import crypto from "crypto";
-
-const VERSION = process.env.Version;
-const ENABLE_OSS = process.env.ENABLE_OSS
-  ? process.env.ENABLE_OSS === "true"
-    ? true
-    : false
-  : isProd;
+import https from "https";
+import { readFileSync } from "fs";
 
 log("cwd:", process.cwd());
 log("version:", VERSION);
@@ -255,8 +250,19 @@ async function bootstrap() {
       }
     );
 
-    app.listen(parseInt(process.env.GATEWAY_PORT));
-    console.log("start server at port 3500");
+    const PORT = parseInt(process.env.GATEWAY_PORT);
+    ENABLE_HTTPS
+      ? https
+          .createServer(
+            {
+              key: readFileSync(process.env.SSL_KEY_PATH),
+              cert: readFileSync(process.env.SSL_CERT_PATH),
+            },
+            app
+          )
+          .listen(PORT)
+      : app.listen(PORT);
+    console.log(`start server at port ${PORT}`);
   } catch (error) {
     console.error(error);
   }

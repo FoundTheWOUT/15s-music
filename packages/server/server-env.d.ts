@@ -17,6 +17,7 @@ declare global {
       ENABLE_OSS: string;
 
       GATEWAY_PORT: string;
+      ENABLE_HTTPS: string
     }
   }
 }
