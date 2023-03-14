@@ -7,7 +7,7 @@ services:
     # we didn't copy env file into the image, but inject from this field
     env_file: .env
     ports:
-      - "3500:3500"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
   db:
     image: postgres
     restart: always
@@ -20,6 +20,6 @@ services:
     expose:
       - "5432"
     ports:
-      - "3600:5432"
+      - "${DB_EXPORINT_PORT}:5432"
 volumes:
   15s-music-db:

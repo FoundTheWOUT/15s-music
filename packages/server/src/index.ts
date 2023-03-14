@@ -255,7 +255,7 @@ async function bootstrap() {
       }
     );
 
-    app.listen(3500);
+    app.listen(parseInt(process.env.GATEWAY_PORT));
     console.log("start server at port 3500");
   } catch (error) {
     console.error(error);

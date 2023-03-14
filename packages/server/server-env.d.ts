@@ -15,6 +15,8 @@ declare global {
       CORS_ORIGIN: string;
       MASTER_TOKEN: string;
       ENABLE_OSS: string;
+
+      GATEWAY_PORT: string;
     }
   }
 }
