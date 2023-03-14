@@ -3,6 +3,7 @@ import "antd/dist/reset.css";
 import AutoPlaySwitch from "./components/AutoPlaySwitch";
 import Link from "next/link";
 import { PlusCircleIcon } from "@heroicons/react/24/solid";
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata = {
   title: "15S Music",
@@ -40,6 +41,7 @@ export default function RootLayout({
 
         {/* main */}
         {children}
+        <Analytics />
       </body>
     </html>
   );
