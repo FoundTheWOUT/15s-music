@@ -1,6 +1,7 @@
 import "./globals.css";
 import AutoPlaySwitch from "./components/AutoPlaySwitch";
 import Link from "next/link";
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata = {
   title: "15S Music",
@@ -24,6 +25,7 @@ export default function RootLayout({
           <AutoPlaySwitch />
         </header>
         {children}
+        <Analytics />
       </body>
     </html>
   );
