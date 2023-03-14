@@ -17,6 +17,7 @@
     "incremental": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
+    "allowSyntheticDefaultImports": true,
     "plugins": [
       {
         "name": "next"

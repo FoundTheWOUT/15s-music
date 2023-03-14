@@ -10,7 +10,10 @@ import {
   WheelEventHandler,
 } from "react";
 import PlayAndPause from "./PlayAndPause";
-import cn from "classnames";
+
+// WaveSurfer use self internal, we can't import here, otherwise causing server error.
+// import WaveSurfer from "wavesurfer.js";
+// import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
 
 const AudioEditor = forwardRef(function AudioEditor(
   { blob, id }: { blob: Blob; id: string },
@@ -49,14 +52,14 @@ const AudioEditor = forwardRef(function AudioEditor(
     const run = async () => {
       const { default: WaveSurfer } = await import("wavesurfer.js");
       const { default: RegionsPlugin } = await import(
-        "wavesurfer.js/dist/plugin/wavesurfer.regions.js"
+        "wavesurfer.js/src/plugin/regions"
       );
       if (!wavesurferRef.current && wavesurferDivRef.current) {
         const wavesurfer = (wavesurferRef.current = WaveSurfer.create({
           container: wavesurferDivRef.current,
           waveColor: "rgb(252 103 103 / 0.3)",
           progressColor: "#fc6767",
-          plugins: [RegionsPlugin.create()],
+          plugins: [RegionsPlugin.create({})],
         }));
         wavesurfer.loadBlob(blob);
         wavesurfer.once("ready", () => {
