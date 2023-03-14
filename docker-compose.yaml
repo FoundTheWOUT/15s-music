@@ -6,6 +6,8 @@ services:
       - db
     # we didn't copy env file into the image, but inject from this field
     env_file: .env
+    labels:
+      - "sh.acme.autoload.domain=15s-music.drawki.top"
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
   db:
