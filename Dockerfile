@@ -2,6 +2,7 @@
 
 FROM node:18-alpine
 RUN npm install -g pnpm
+RUN npm install pm2 -g
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -21,4 +22,4 @@ COPY --chown=node:node packages/server packages/server
 RUN pnpm serve build
 EXPOSE 3500
 
-CMD [ "node", "packages/server/dist/index.js" ]
+CMD [ "pm2-runtime", "packages/server/dist/index.js" ]
