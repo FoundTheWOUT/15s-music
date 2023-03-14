@@ -11,6 +11,7 @@ import AudioEditor from "../../components/AudioEditor";
 import WaveSurfer from "wavesurfer.js";
 // import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import { generateFilename } from "@/utils";
+import cn from "classnames";
 
 type MusicInput = {
   nanoId: string;
@@ -35,12 +36,13 @@ const musicInputAtom = atom<MusicInput>({
   authors: [],
 });
 
-
+const QUEUE_MAX_LENGTH = 5;
 
 function AddMusic() {
   const [musics, setMusics] = useState<MusicInput[]>([]);
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
   const editorRefs = useRef<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     editorRefs.current = editorRefs.current.slice(0, musics.length);
@@ -49,6 +51,7 @@ function AddMusic() {
   const handleSubmit = async () => {
     if (!musics.length) return;
     const form = new FormData();
+    setLoading(true);
     // cut audio
     try {
       // TODO: cut audio parallel.
@@ -134,8 +137,9 @@ function AddMusic() {
         console.log(res);
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
+    setLoading(true);
   };
 
   const handleMusicAppend = async () => {
@@ -234,8 +238,12 @@ function AddMusic() {
             </div>
 
             <TrashIcon
-              className="btn icon absolute top-0 right-0 m-4 w-6 cursor-pointer rounded text-red-500"
+              className={cn(
+                "icon absolute top-0 right-0 m-4 w-6 rounded",
+                loading ? "cursor-not-allowed text-red-300" : "btn text-red-500"
+              )}
               onClick={() => {
+                if (loading) return;
                 // ! destroy wavesurfer here
                 music.wavesurferRef?.destroy();
                 setMusics((musics) => {
@@ -256,7 +264,11 @@ function AddMusic() {
         {musics.length > 0 && (
           <>
             <button
-              className="btn rounded bg-primary py-2 font-bold text-white"
+              disabled={loading}
+              className={cn(
+                "btn rounded bg-primary py-2 font-bold text-white",
+                loading ? "bg-primary/30" : "bg-primary"
+              )}
               onClick={handleSubmit}
             >
               提交
@@ -357,14 +369,14 @@ function AddMusic() {
 
           <Form.Item wrapperCol={{ offset: 2 }}>
             <Button
-              disabled={musics.length >= 20}
+              disabled={musics.length >= QUEUE_MAX_LENGTH}
               type="primary"
               onClick={handleMusicAppend}
             >
               添加到队列
             </Button>
             <span className="ml-2 align-bottom text-xs text-gray-500">
-              {musics.length}/20
+              {musics.length}/{QUEUE_MAX_LENGTH}
             </span>
             <Button
               className="ml-2"

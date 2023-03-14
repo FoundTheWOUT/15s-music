@@ -16,6 +16,7 @@ function MusicList({ children, total }: PropsWithChildren<{ total: number }>) {
   const finished = page * PAGE_SIZE >= total;
 
   useEffect(() => {
+    const divNode = loadingRef.current;
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !finished) {
         // setSize(size + 1);
@@ -23,11 +24,9 @@ function MusicList({ children, total }: PropsWithChildren<{ total: number }>) {
         router.refresh();
       }
     });
-    if (loadingRef.current) {
-      observer.observe(loadingRef.current);
-    }
+    divNode && observer.observe(divNode);
     return () => {
-      loadingRef.current && observer.unobserve(loadingRef.current);
+      divNode && observer.unobserve(divNode);
     };
   }, [router, page, finished]);
 

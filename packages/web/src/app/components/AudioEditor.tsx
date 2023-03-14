@@ -86,6 +86,7 @@ const AudioEditor = forwardRef(function AudioEditor(
       // wavesurferRef.current?.destroy()
       wavesurferRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   //   TODO: listen on wheel event in non passive.

@@ -14,7 +14,7 @@ export const cutAudio = async (
   if (!ffmpeg) {
     ffmpeg = createFFmpeg({
       log: true,
-      // TODO
+      corePath: new URL("ffmpeg-core.js", document.location.origin).href,
       //corePath:new URL('static/js/ffmpeg-core.js', document.location).href
     }) as FFmpeg;
     await ffmpeg.load();
