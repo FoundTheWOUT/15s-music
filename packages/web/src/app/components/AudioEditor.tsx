@@ -10,6 +10,7 @@ import {
   WheelEventHandler,
 } from "react";
 import PlayAndPause from "./PlayAndPause";
+import cn from "classnames";
 
 const AudioEditor = forwardRef(function AudioEditor(
   { blob, id }: { blob: Blob; id: string },
@@ -18,6 +19,7 @@ const AudioEditor = forwardRef(function AudioEditor(
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const wavesurferDivRef = useRef<HTMLDivElement | null>(null);
   const [paused, setPaused] = useState(true);
+  const [loadingWavesurfer, setLoadingWavesurfer] = useState(true);
 
   useImperativeHandle(
     ref,
@@ -29,20 +31,19 @@ const AudioEditor = forwardRef(function AudioEditor(
     []
   );
 
-  useEffect(() => {
-    console.log('hi');
-    const handleResize = () => {
-      const width = wavesurferDivRef.current?.clientWidth;
-      // console.log(wavesurferRef.current?.drawer);
-      wavesurferRef.current?.drawer?.updateSize();
-    };
-    console.log("mount resize");
+  // TODO: resize the editor.
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     const width = wavesurferDivRef.current?.clientWidth;
+  //     // console.log(wavesurferRef.current?.drawer);
+  //     wavesurferRef.current?.drawer?.updateSize();
+  //   };
 
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  //   window.addEventListener("resize", handleResize);
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const run = async () => {
@@ -59,6 +60,7 @@ const AudioEditor = forwardRef(function AudioEditor(
         }));
         wavesurfer.loadBlob(blob);
         wavesurfer.once("ready", () => {
+          setLoadingWavesurfer(false);
           const duration = wavesurfer.getDuration();
           if (duration > 18) {
             wavesurfer.addRegion({
@@ -104,6 +106,8 @@ const AudioEditor = forwardRef(function AudioEditor(
 
   return (
     <div className="flex flex-col gap-2">
+      {/* <div className="h-32 rounded-lg bg-primary/30"></div> */}
+      {/* maybe we can add a loading here */}
       <div className="h-32" ref={wavesurferDivRef}></div>
       {/* control */}
       <div className="flex gap-2 self-center rounded bg-primary/80 p-2">

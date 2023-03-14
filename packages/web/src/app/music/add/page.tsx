@@ -1,37 +1,17 @@
 "use client";
 
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Select, Input, Button, Upload, message, Form, Divider } from "antd";
 import { nanoid } from "nanoid";
 import { atom, useAtom } from "jotai";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUturnUpIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
-import {
-  checkAudioLength,
-  loadAudioMetaData,
-  Music,
-  MusicPlayer,
-} from "@/music";
-import AuthenticationGuard from "../../components/AuthenticationGuard";
-import { tokenAtom } from "@/state";
+import { ArrowUpOnSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { loadAudioMetaData, Music } from "@/music";
 import { StyleProvider } from "@ant-design/cssinjs";
 import AudioEditor from "../../components/AudioEditor";
 import WaveSurfer from "wavesurfer.js";
 // import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
-import crypto from "crypto";
-
-function generateFilename(): Promise<string> {
-  return new Promise((res, rej) => {
-    crypto.randomBytes(16, function (err, raw) {
-      if (err) rej(err);
-      res(raw.toString("hex"));
-    });
-  });
-}
+import { generateFilename } from "@/utils";
 
 type MusicInput = {
   nanoId: string;
@@ -64,6 +44,8 @@ const cutAudio = async (id: string, blob: Blob, start: number, end: number) => {
   if (!ffmpeg) {
     ffmpeg = createFFmpeg({
       log: true,
+      // TODO
+      //corePath:new URL('static/js/ffmpeg-core.js', document.location).href
     }) as FFmpeg;
     await ffmpeg.load();
   }
@@ -84,7 +66,6 @@ const cutAudio = async (id: string, blob: Blob, start: number, end: number) => {
 function AddMusic() {
   const [musics, setMusics] = useState<MusicInput[]>([]);
   const [musicInput, setMusicInput] = useAtom(musicInputAtom);
-  const [token] = useAtom(tokenAtom);
   const editorRefs = useRef<any[]>([]);
 
   useEffect(() => {
@@ -94,44 +75,55 @@ function AddMusic() {
   const handleSubmit = async () => {
     if (!musics.length) return;
     const form = new FormData();
-    for (let index = 0; index < musics.length; index++) {
-      const music = musics[index];
-      // if (!music.file || !music.cover) {
-      //   console.log("must file/cover");
-      //   return;
-      // }
-      const editorRef = editorRefs.current[index];
-      if (editorRef.wavesurferRef) {
+    // cut audio
+    try {
+      // TODO: cut audio parallel.
+      // const cutAudioList = await Promise.all(
+      //   musics.map(async (music, index) => {
+      //     const editorRef = editorRefs.current[index];
+      //     const wavesurfer = editorRef.wavesurferRef.current as WaveSurfer;
+      //     const regions = Object.values(wavesurfer.regions.list ?? {});
+      //     // cut audio if has region
+      //     if (regions.length) {
+      //       const { start, end } = regions[0];
+      //       return await cutAudio(music.nanoId, music.file, start, end);
+      //     }
+      //     // return the audio directly.
+      //     return music.file as Blob;
+      //   })
+      // );
+      for (let index = 0; index < musics.length; index++) {
+        const music = musics[index];
+        if (!music.file || !music.cover) {
+          message.error("必须上传封面/音乐");
+          return;
+        }
+        const editorRef = editorRefs.current[index];
         const wavesurfer = editorRef.wavesurferRef.current as WaveSurfer;
         const regions = Object.values(wavesurfer.regions.list ?? {});
+        // cut audio if has region
         if (regions.length) {
           const { start, end } = regions[0];
-          try {
-            // TODO: muti thread!
-            const cutBlob = await cutAudio(
-              music.nanoId,
-              music.file,
-              start,
-              end
-            );
-            const filename = await generateFilename();
-            form.append(
-              "audio",
-              new File([cutBlob], `${music.nanoId}:${filename}.mp3`)
-            );
-          } catch (error) {
-            console.error(error);
-          }
+          music.file = await cutAudio(music.nanoId, music.file, start, end);
         }
-      }
 
-      form.append(
-        "cover",
-        new File(
-          [music.cover],
-          `${music.nanoId}:${await generateFilename()}.webp`
-        )
-      );
+        const filename = await generateFilename();
+        form.append(
+          "audio",
+          new File([music.file], `${music.nanoId}:${filename}.mp3`)
+        );
+        form.append(
+          "cover",
+          new File(
+            [music.cover],
+            `${music.nanoId}:${await generateFilename()}.webp`
+          )
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("裁剪失败");
+      return;
     }
 
     try {
@@ -140,9 +132,6 @@ function AddMusic() {
         `${process.env.NEXT_PUBLIC_API_GATE}/upload/once`,
         {
           method: "POST",
-          headers: {
-            authorization: `Basic ${token}`,
-          },
           body: form,
         }
       ).then((res) => {
@@ -161,7 +150,6 @@ function AddMusic() {
       fetch(`${process.env.NEXT_PUBLIC_API_GATE}/music`, {
         method: "POST",
         headers: {
-          authorization: `Basic ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -341,7 +329,7 @@ function AddMusic() {
               beforeUpload={handleSongUpload}
               fileList={musicInput.file ? [musicInput.file] : []}
               maxCount={1}
-              accept=".mp3"
+              accept="audio/*"
               onRemove={() => {
                 setMusicInput((preInput) => ({
                   ...preInput,
@@ -351,7 +339,9 @@ function AddMusic() {
             >
               <div className="mx-auto">
                 <ArrowUpOnSquareIcon className="mx-auto w-12 text-[#3875f6]" />
-                <p className="mt-3 font-bold text-[#3875f6]">上传15秒音乐</p>
+                <p className="mt-3 font-bold text-[#3875f6]">
+                  上传15秒音乐(.mp3)
+                </p>
                 <p className="text-xs text-gray-500">
                   可以上传完整音乐进行后续裁剪
                 </p>
@@ -372,6 +362,7 @@ function AddMusic() {
                 }));
                 return false;
               }}
+              accept="image/*"
               fileList={musicInput.cover ? [musicInput.cover] : []}
               maxCount={1}
               onRemove={() => {
@@ -383,7 +374,9 @@ function AddMusic() {
             >
               <div className="mx-auto">
                 <ArrowUpOnSquareIcon className="mx-auto w-12 text-[#3875f6]" />
-                <p className="mt-3 font-bold text-[#3875f6]">上传封面</p>
+                <p className="mt-3 font-bold text-[#3875f6]">
+                  上传封面(.png/.jpeg/.webp)
+                </p>
               </div>
             </Upload.Dragger>
           </Form.Item>
@@ -414,12 +407,4 @@ function AddMusic() {
   );
 }
 
-function AddMusicPage() {
-  return (
-    <AuthenticationGuard allowGuest>
-      <AddMusic />
-    </AuthenticationGuard>
-  );
-}
-
-export default AddMusicPage;
+export default AddMusic;

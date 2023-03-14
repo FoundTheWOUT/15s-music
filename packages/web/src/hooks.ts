@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import { useRef } from "react";
-import useSWR from "swr";
+import useSWRImmutable from "swr/immutable";
 import { isBrowser } from "./const";
 import { tokenAtom } from "./state";
 
@@ -11,11 +11,10 @@ export const useAuthentication = () => {
     localToken = tokenFromStorage ? JSON.parse(tokenFromStorage) : "";
   }
   const [token, setToken] = useAtom(tokenAtom);
+  const _token = token || localToken;
 
-  const { data, mutate } = useSWR("authentication", () =>
-    fetch(`/api/authentication?token=${token || localToken}`).then((res) =>
-      res.json()
-    )
+  const { data, mutate } = useSWRImmutable(`authentication${_token}`, () =>
+    fetch(`/api/authentication?token=${_token}`).then((res) => res.json())
   );
 
   return {

@@ -9,7 +9,7 @@ export async function musicRoute(): Promise<Router> {
 
   const music = express.Router();
 
-  music.post("/music", auth({ allowGuest: true }), async function (req, rep) {
+  music.post("/music", async function (req, rep) {
     const data = req.body as { musics: Music[] };
     const musicRepository = dbSource.getRepository(Music);
     const musics = data.musics.map((music) =>
