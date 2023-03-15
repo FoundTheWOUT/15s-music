@@ -35,7 +35,7 @@ async function Page({ page }: { page: number }) {
   return data.musics.map((music, idx) => {
     return (
       <div key={idx} className="flex flex-col gap-2">
-        <Music15sPlayer music={music} />
+        <Music15sPlayer music={music} index={page * PAGE_SIZE + idx} />
 
         <div>
           <div className="truncate font-bold" title={music.name}>

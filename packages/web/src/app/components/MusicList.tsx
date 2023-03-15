@@ -7,6 +7,7 @@ import { Event } from "../../event";
 import ErrorBoundary from "./ErrorBoundary";
 
 export const playEvent = new Event<{ id: number }>();
+export const playNextEvent = new Event<{ index: number }>();
 
 function MusicList({ children, total }: PropsWithChildren<{ total: number }>) {
   const loadingRef = useRef<HTMLDivElement | null>(null);

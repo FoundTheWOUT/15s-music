@@ -1,9 +1,10 @@
 import "./globals.css";
 import "antd/dist/reset.css";
 import AutoPlaySwitch from "./components/AutoPlaySwitch";
+import AutoPlayNextSwitch from "./components/AutoPlayNextSwitch";
 import Link from "next/link";
 import { PlusCircleIcon } from "@heroicons/react/24/solid";
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
   title: "15S Music",
@@ -36,6 +37,7 @@ export default function RootLayout({
             {/* divider */}
             <div className="mx-2 h-3/5 w-[2px] bg-slate-200"></div>
             <AutoPlaySwitch />
+            <AutoPlayNextSwitch />
           </div>
         </header>
 

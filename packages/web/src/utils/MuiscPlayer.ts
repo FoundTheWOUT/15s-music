@@ -23,6 +23,7 @@ export class MusicPlayer {
   setupCtx() {
     if (!this.audio) {
       this.audio = new Audio();
+      document.body.appendChild(this.audio);
       this.audio.loop = true;
     }
     if (!this.audioContext) {
@@ -38,7 +39,7 @@ export class MusicPlayer {
     }
   }
 
-  play(input: ArrayBuffer | Blob) {
+  play(input: ArrayBuffer | Blob): Promise<MusicPlayer> {
     this.setupCtx();
     return new Promise(async (res, rej) => {
       if (!this.audio) {
@@ -52,6 +53,7 @@ export class MusicPlayer {
           : new Blob([input], { type: "audio/mp3" });
 
       if (this.audio?.src) {
+        this.pause();
         URL.revokeObjectURL(this.audio.src);
       }
       this.audio.src = URL.createObjectURL(blob);
@@ -87,5 +89,13 @@ export class MusicPlayer {
       "--amplitude",
       map(sum / this.analyser.frequencyBinCount, 0, 128, 1, 1.2).toString()
     );
+  }
+
+  once(event: keyof HTMLMediaElementEventMap, cb: () => void) {
+    const eventHandler = () => {
+      cb();
+      this.audio?.removeEventListener(event, eventHandler);
+    };
+    this.audio?.addEventListener(event, eventHandler);
   }
 }

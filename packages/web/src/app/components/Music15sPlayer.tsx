@@ -4,19 +4,19 @@ import Image from "next/image";
 import useSWRMutation from "swr/mutation";
 import { Music } from "../../utils/music";
 import { MusicPlayer } from "../../utils/MuiscPlayer";
-import { HeartIcon, PauseIcon, PlayIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
+import { HeartIcon } from "@heroicons/react/24/solid";
+import { useCallback, useEffect, useState } from "react";
 import cn from "classnames";
 import { useAtom } from "jotai";
-import { autoPlayAtom, likedSongAtom } from "@/state";
-import { playEvent } from "./MusicList";
+import { autoPlayAtom, autoPlayNextAtom, likedSongAtom } from "@/state";
+import { playEvent, playNextEvent } from "./MusicList";
 import { useDebounce } from "@/hooks";
 import { STATIC_HOST } from "../../const";
 import PlayAndPause from "./PlayAndPause";
 
 const player = new MusicPlayer();
 
-function Music15sPlayer({ music }: { music: Music }) {
+function Music15sPlayer({ music, index }: { music: Music; index: number }) {
   const { trigger } = useSWRMutation(music.song_15s_src, () =>
     fetch(`${STATIC_HOST}/${music.song_15s_src}`).then((res) =>
       res.arrayBuffer()
@@ -24,6 +24,12 @@ function Music15sPlayer({ music }: { music: Music }) {
   );
 
   const [autoPlay] = useAtom(autoPlayAtom);
+  const [autoPlayNext] = useAtom(autoPlayNextAtom);
+
+  if (player.audio) {
+    player.audio.loop = !autoPlayNext;
+  }
+
   const [paused, setPaused] = useState(true);
   const [likedSong, setLikedSong] = useAtom(likedSongAtom);
   const liked = likedSong.includes(music.uuid);
@@ -41,6 +47,24 @@ function Music15sPlayer({ music }: { music: Music }) {
     }
   };
 
+  const playNext = useCallback(() => {
+    console.log(autoPlayNext);
+    if (autoPlayNext) {
+      playNextEvent.emit({ index: index + 1 });
+    }
+  }, [autoPlayNext, index]);
+
+  useEffect(() => {
+    const unsubscribePlayNext = playNextEvent.subscribe(({ index: idx }) => {
+      if (idx === index) {
+        play();
+      }
+    });
+    return () => {
+      unsubscribePlayNext();
+    };
+  }, [playNext, index]);
+
   const play = async () => {
     const buffer = await trigger();
     if (buffer) {
@@ -49,7 +73,8 @@ function Music15sPlayer({ music }: { music: Music }) {
       playEvent.emit({ id: music.id });
       player
         .play(buffer)
-        .then(() => {
+        .then((player) => {
+          player.once("ended", playNext);
           setPaused(false);
         })
         .catch((err) => {
@@ -75,6 +100,7 @@ function Music15sPlayer({ music }: { music: Music }) {
         pause();
       }
     });
+
     return () => {
       unsubscribe();
     };
