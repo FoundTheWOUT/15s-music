@@ -87,7 +87,7 @@ importers:
       swr: ^2.0.4
       tailwindcss: ^3.2.7
       typescript: 4.9.5
-      wavesurfer.js: ^6.5.0
+      wavesurfer.js: ^6.6.0
     dependencies:
       '@ant-design/cssinjs': 1.6.1_biqbaboplfbrettd7655fr4n2y
       '@ffmpeg/core': 0.11.0
@@ -110,7 +110,7 @@ importers:
       swr: 2.0.4_react@18.2.0
       tailwindcss: 3.2.7_postcss@8.4.21
       typescript: 4.9.5
-      wavesurfer.js: 6.5.0
+      wavesurfer.js: 6.6.0
     devDependencies:
       '@15s-music/server': link:../server
       '@types/ali-oss': 6.16.7
@@ -5277,8 +5277,8 @@ packages:
       acorn-walk: 8.2.0
     dev: false
 
-  /wavesurfer.js/6.5.0:
-    resolution: {integrity: sha512-h7T0iRvIbEtEL87/5GqGK8H0usGkodRq989PaPfQ452+idolbxtT8G8Pdi9XvSBNfLz48l05o3EYwH7UB5h1ig==}
+  /wavesurfer.js/6.6.0:
+    resolution: {integrity: sha512-e+1mdjeLNQoZhZqrOV7e13OkCVilYc9JfcGJu7SxuMZAwHUgpUQH9h3ci3KUEIPV4jTTCvmddcBetrHmv3axgw==}
     dev: false
 
   /webidl-conversions/3.0.1:

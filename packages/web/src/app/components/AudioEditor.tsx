@@ -63,6 +63,7 @@ const AudioEditor = forwardRef(function AudioEditor(
         }));
         wavesurfer.loadBlob(blob);
         wavesurfer.once("ready", () => {
+          console.log("i am ready");
           setLoadingWavesurfer(false);
           const duration = wavesurfer.getDuration();
           if (duration > 18) {
@@ -79,14 +80,10 @@ const AudioEditor = forwardRef(function AudioEditor(
     };
     run();
     return () => {
-      // ! we do not destroy wavesurfer instance here
-      // ! but before the editor list state updated
-      // ! otherwise, wavesurfer would not get the element
-      // ! and causing error.
-      // wavesurferRef.current?.destroy()
+      wavesurferRef.current?.destroy();
       wavesurferRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   //   TODO: listen on wheel event in non passive.

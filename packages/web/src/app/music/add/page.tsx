@@ -26,8 +26,6 @@ type MusicInput = {
 
   audioPreview?: string;
   audioPreviewBlob?: Blob;
-
-  wavesurferRef?: WaveSurfer;
 };
 
 const musicInputAtom = atom<MusicInput>({
@@ -243,8 +241,7 @@ function AddMusic() {
               )}
               onClick={() => {
                 if (loading) return;
-                // ! destroy wavesurfer here
-                music.wavesurferRef?.destroy();
+
                 setMusics((musics) => {
                   const nextMusics = [...musics];
                   const target = nextMusics[idx];
