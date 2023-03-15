@@ -107,13 +107,10 @@ function AddMusic() {
 
     try {
       // return map of nanoid to file src
-      const fileMap = await fetch(
-        `${process.env.NEXT_PUBLIC_API_GATE}/upload/once`,
-        {
-          method: "POST",
-          body: form,
-        }
-      ).then((res) => {
+      const fileMap = await fetch("/api/upload", {
+        method: "POST",
+        body: form,
+      }).then((res) => {
         if (res.ok) return res.json();
         message.error("Upload fail...");
       });
