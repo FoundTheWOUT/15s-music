@@ -19,6 +19,8 @@ ENV Version=$version
 
 COPY --chown=node:node packages/server packages/server
 
+RUN mkdir -p /app/logs
+
 RUN pnpm serve build
 EXPOSE 3500
 

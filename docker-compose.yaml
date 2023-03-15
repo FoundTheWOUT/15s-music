@@ -10,6 +10,8 @@ services:
       - "sh.acme.autoload.domain=15s-music.drawki.top"
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    volumes:
+      - ./logs:/app/logs
   db:
     image: postgres
     restart: always

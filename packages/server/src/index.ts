@@ -12,13 +12,22 @@ import { getAppContext } from "./ctx";
 import { auth } from "./middleware/authentication";
 import { parseFile, parseBuffer } from "music-metadata";
 import https from "https";
-import { readFileSync } from "fs";
+import { readFileSync, createWriteStream } from "fs";
 import { upload, webpUpload } from "./middleware/upload";
+import path from "path";
 
 log("cwd:", process.cwd());
 log("version:", VERSION);
 log("environment:", isProd ? "production" : "other");
 log("enabled oss:", ENABLE_OSS);
+
+const accessLogStream = createWriteStream(
+  path.join(process.cwd(), "logs", "access.log"),
+  {
+    // append mode
+    flags: "a",
+  }
+);
 
 async function bootstrap() {
   try {
@@ -35,7 +44,16 @@ async function bootstrap() {
       )
       .use(express.json())
       .use(express.urlencoded())
-      .use(morgan("common"))
+      .use(
+        morgan(
+          "common",
+          isProd
+            ? {
+                stream: accessLogStream,
+              }
+            : {}
+        )
+      )
       .use("/uploads", express.static("uploads"))
       .use(await musicRoute());
 
