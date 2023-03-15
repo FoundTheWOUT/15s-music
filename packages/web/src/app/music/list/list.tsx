@@ -1,4 +1,5 @@
 import { Music } from "@/utils/music";
+import { STATIC_HOST } from "../../../const";
 
 async function MusicList() {
   const data: { musics: Music[] } = await fetch(
@@ -12,26 +13,29 @@ async function MusicList() {
   ).then((res) => res.json());
 
   return (
-    <table className="table-auto">
+    <table className="w-full table-auto">
       <thead>
-        <tr className="border">
-          <th>ID</th>
+        <tr className="h-9 border">
+          <th />
+          <th className="w-8">ID</th>
           <th>Name</th>
-          <th>censored</th>
+          <th>Censored</th>
+          <th>Audio</th>
         </tr>
       </thead>
       <tbody>
         {data.musics.map((music) => (
           <tr key={music.id} className="border">
-            <td>{music.id}</td>
+            <td className="py-4">
+              <input type="checkbox" />
+            </td>
+            <td className="p-4">{music.id}</td>
             <td>{music.name}</td>
-            <td>
-              <input
-                className="checked:bg-red-500"
-                type="checkbox"
-                defaultChecked={music.censored}
-                readOnly
-              />
+            <td>{music.censored ? "✔" : "❌"}</td>
+            <td className="py-2">
+              <audio controls>
+                <source src={`${STATIC_HOST}/${music.song_15s_src}`} />
+              </audio>
             </td>
           </tr>
         ))}

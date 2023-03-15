@@ -28,5 +28,6 @@ jobs:
           script: | # 执行部署相关的脚本
             cd /root/15s-music
             git pull
-            sudo docker-compose build --build-arg version=$(git rev-parse --short HEAD)
-            sudo docker-compose up -d --no-deps server
+            docker-compose build --build-arg version=$(git rev-parse --short HEAD)
+            docker-compose up -d --no-deps server
+            /root/.acme.sh/acme.sh --deploy --deploy-hook docker -d 15-music.drawki.top
