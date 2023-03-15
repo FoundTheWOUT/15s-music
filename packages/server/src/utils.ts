@@ -27,26 +27,3 @@ export const sharpImageToWebp = async (buf: Buffer) => {
   return output;
 };
 
-// return the Map<nanoid(from front_end),new_file_name(from multer)>
-// the new_file_name will store into db. And frontend will concat the value with Static path later.
-export const ossPut = async (
-  client: OSS,
-  files: Express.Multer.File[],
-  filenameFormatter?: (name: string) => string
-): Promise<Record<string, string>> => {
-  try {
-    const entry = await Promise.all(
-      files.map(async (file) => {
-        const [id, filename] = file.originalname.split(":");
-        if (ENABLE_OSS) {
-          log(`putting ${file.filename} to oss...`);
-          await client.put(filename, file.buffer);
-        }
-        return [id, filename];
-      })
-    );
-    return Object.fromEntries(entry);
-  } catch (error) {
-    throw error;
-  }
-};

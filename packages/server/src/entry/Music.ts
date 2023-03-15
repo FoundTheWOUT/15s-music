@@ -23,6 +23,6 @@ export class Music {
   cover_src?: string;
   @Column({ default: false })
   censored: boolean;
-  @CreateDateColumn()
+  @CreateDateColumn({ type: "timestamptz" })
   createdAt: Date;
 }
