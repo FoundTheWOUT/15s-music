@@ -31,7 +31,7 @@ pnpm i
 ```
 #### Server
 
-1. 复制 server 目录下 `.env.example` 为 `.env.dev`
+1. 复制 server 目录下 `.env.example` 为 `.env`
 
 如果你在使用 vscode，你可以运行 `dev server` Task
 

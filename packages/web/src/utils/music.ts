@@ -2,6 +2,7 @@ export type { Music } from "@15s-music/server/src/entry";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 
 let ffmpeg: FFmpeg | null = null;
+const CDN = "https://cdn.staticfile.org/ffmpeg-core/0.11.0/";
 export const cutAudio = async (
   id: string,
   blob: Blob,
@@ -14,7 +15,9 @@ export const cutAudio = async (
   if (!ffmpeg) {
     ffmpeg = createFFmpeg({
       log: true,
-      corePath: new URL("ffmpeg-core.js", document.location.origin).href,
+      corePath: new URL("ffmpeg-core.min.js", CDN).href,
+      workerPath: new URL("ffmpeg-core.worker.min.js", CDN).href,
+      wasmPath: new URL("ffmpeg-core.wasm", CDN).href,
       //corePath:new URL('static/js/ffmpeg-core.js', document.location).href
     }) as FFmpeg;
     await ffmpeg.load();

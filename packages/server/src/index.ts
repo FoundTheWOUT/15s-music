@@ -1,105 +1,24 @@
+// load env
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import morgan from "morgan";
-import multer from "multer";
 import cors from "cors";
-import OSS from "ali-oss";
-import * as dotenv from "dotenv";
-import { resolve } from "path";
 import { ENABLE_HTTPS, ENABLE_OSS, isProd, VERSION } from "./const";
-import { log } from "./utils";
-import sharp from "sharp";
+import { log, ossPut, sharpImageToWebp } from "./utils";
 import { musicRoute } from "./routes/music";
 import { getAppContext } from "./ctx";
 import { auth } from "./middleware/authentication";
 import { parseFile, parseBuffer } from "music-metadata";
-import crypto from "crypto";
 import https from "https";
 import { readFileSync } from "fs";
+import { upload, webpUpload } from "./middleware/upload";
 
 log("cwd:", process.cwd());
 log("version:", VERSION);
 log("environment:", isProd ? "production" : "other");
-// dev load .env.dev, prod load .env
-const dotenvPath = resolve(process.cwd(), isProd ? ".env" : ".env.dev");
-dotenv.config({ path: dotenvPath });
-
-function generateFilename(): Promise<string> {
-  return new Promise((res, rej) => {
-    crypto.randomBytes(16, function (err, raw) {
-      if (err) rej(err);
-      res(raw.toString("hex"));
-    });
-  });
-}
-
-const upload = multer({
-  storage: ENABLE_OSS
-    ? multer.memoryStorage()
-    : multer.diskStorage({
-        destination: "uploads/",
-        async filename(req, file, cb) {
-          const namePath = file.originalname.split(":");
-          console.log(namePath);
-          if (namePath.length === 2) {
-            return cb(null, namePath[1]);
-          }
-          return cb(
-            new Error("file name should like: [id]/[filename.ext]"),
-            await generateFilename()
-          );
-        },
-      }),
-});
-
-const webpUpload = multer({
-  storage: ENABLE_OSS
-    ? multer.memoryStorage()
-    : multer.diskStorage({
-        destination: "uploads/",
-        filename: function (req, file, cb) {
-          const uniqueSuffix =
-            Date.now() + "-" + Math.round(Math.random() * 1e9);
-          cb(null, `local-${uniqueSuffix}.webp`);
-        },
-      }),
-});
-
-// return the Map<nanoid(from front_end),new_file_name(from multer)>
-// the new_file_name will store into db. And frontend will concat the value with Static path later.
-const ossPut = async (
-  client: OSS,
-  files: Express.Multer.File[],
-  filenameFormatter?: (name: string) => string
-): Promise<Record<string, string>> => {
-  try {
-    const entry = await Promise.all(
-      files.map(async (file) => {
-        const [id, filename] = file.originalname.split(":");
-        // const name = ENABLE_OSS
-        //   ? filenameFormatter
-        //     ? filenameFormatter(id)
-        //     : id
-        //   : file.filename;
-
-        if (ENABLE_OSS) {
-          await client.put(filename, file.buffer);
-        }
-        return [id, filename];
-      })
-    );
-    return Object.fromEntries(entry);
-  } catch (error) {
-    throw error;
-  }
-};
-
-const sharpImageToWebp = async (buf: Buffer) => {
-  const output = await sharp(buf)
-    .resize(200)
-    .webp({ lossless: true })
-    .toBuffer();
-  return output;
-};
+log("enabled oss:", ENABLE_OSS);
 
 async function bootstrap() {
   try {
@@ -116,7 +35,7 @@ async function bootstrap() {
       )
       .use(express.json())
       .use(express.urlencoded())
-      .use(morgan("tiny"))
+      .use(morgan("common"))
       .use("/uploads", express.static("uploads"))
       .use(await musicRoute());
 
