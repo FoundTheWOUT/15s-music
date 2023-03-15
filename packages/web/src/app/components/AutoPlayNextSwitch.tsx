@@ -20,18 +20,6 @@ export default function AutoPlaySwitch() {
           >
             自动播放下一首
           </span>
-          <Transition
-            className="absolute -left-16 mt-2 w-48 rounded-xl border bg-white p-2 text-sm shadow-xl"
-            show={hover}
-            enter="transition-opacity"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            启动该选项后，鼠标移动到唱片上，音乐自动播放
-          </Transition>
         </Switch.Label>
         <SwitchBtn checked={autoPlay} onChange={setAutoPlay} />
       </div>

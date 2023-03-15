@@ -24,11 +24,6 @@ function Music15sPlayer({ music, index }: { music: Music; index: number }) {
   );
 
   const [autoPlay] = useAtom(autoPlayAtom);
-  const [autoPlayNext] = useAtom(autoPlayNextAtom);
-
-  if (player.audio) {
-    player.audio.loop = !autoPlayNext;
-  }
 
   const [paused, setPaused] = useState(true);
   const [likedSong, setLikedSong] = useAtom(likedSongAtom);
@@ -47,8 +42,14 @@ function Music15sPlayer({ music, index }: { music: Music; index: number }) {
     }
   };
 
+  // ---- autoPlayNext ---
+  const [autoPlayNext] = useAtom(autoPlayNextAtom);
+
+  if (player.audio) {
+    player.audio.loop = !autoPlayNext;
+  }
+
   const playNext = useCallback(() => {
-    console.log(autoPlayNext);
     if (autoPlayNext) {
       playNextEvent.emit({ index: index + 1 });
     }
@@ -64,6 +65,7 @@ function Music15sPlayer({ music, index }: { music: Music; index: number }) {
       unsubscribePlayNext();
     };
   }, [playNext, index]);
+  // ---- autoPlayNext ---
 
   const play = async () => {
     const buffer = await trigger();
@@ -84,9 +86,12 @@ function Music15sPlayer({ music, index }: { music: Music; index: number }) {
     }
   };
 
-  const { trigger: debouncedPlay, stop } = useDebounce(() => {
-    play();
-  });
+  const { trigger: debouncedPlay, stop } = useDebounce(
+    () => {
+      play();
+    },
+    { delay: 300 }
+  );
 
   const pause = () => {
     player.pause();
