@@ -24,6 +24,7 @@ export class MusicPlayer {
     if (!this.audio) {
       this.audio = new Audio();
       document.body.appendChild(this.audio);
+      this.audio.crossOrigin = "";
       this.audio.loop = true;
     }
     if (!this.audioContext) {
@@ -39,7 +40,7 @@ export class MusicPlayer {
     }
   }
 
-  play(input: ArrayBuffer | Blob): Promise<MusicPlayer> {
+  play(input: ArrayBuffer | Blob | string): Promise<MusicPlayer> {
     this.setupCtx();
     return new Promise(async (res, rej) => {
       if (!this.audio) {
@@ -56,7 +57,8 @@ export class MusicPlayer {
         this.pause();
         URL.revokeObjectURL(this.audio.src);
       }
-      this.audio.src = URL.createObjectURL(blob);
+      this.audio.src =
+        typeof input === "string" ? input : URL.createObjectURL(blob);
       await this.audio?.play().catch(rej);
       this.dance();
       res(this);
@@ -91,11 +93,14 @@ export class MusicPlayer {
     );
   }
 
-  once(event: keyof HTMLMediaElementEventMap, cb: () => void) {
+  once(event: keyof HTMLMediaElementEventMap, cb: (that: MusicPlayer) => void) {
+    this.setupCtx();
     const eventHandler = () => {
-      cb();
+      cb(this);
       this.audio?.removeEventListener(event, eventHandler);
     };
     this.audio?.addEventListener(event, eventHandler);
   }
 }
+
+export const player = new MusicPlayer();

@@ -1,5 +1,6 @@
 import { Music } from "@/utils/music";
 import { STATIC_HOST } from "../../../const";
+import MusicPreviewPlayer from "../../components/MuiscPreviewPlayer";
 
 async function MusicList() {
   const data: { musics: Music[] } = await fetch(
@@ -26,16 +27,16 @@ async function MusicList() {
       <tbody>
         {data.musics.map((music) => (
           <tr key={music.id} className="border">
-            <td className="py-4">
-              <input type="checkbox" />
+            <td className="px-2">
+              <input type="checkbox" className="h-4 w-4" />
             </td>
-            <td className="p-4">{music.id}</td>
+            <td className="px-4">{music.id}</td>
             <td>{music.name}</td>
             <td>{music.censored ? "✔" : "❌"}</td>
-            <td className="py-2">
-              <audio controls>
-                <source src={`${STATIC_HOST}/${music.song_15s_src}`} />
-              </audio>
+            <td className="px-2">
+              <MusicPreviewPlayer
+                src={`${STATIC_HOST}/${music.song_15s_src}`}
+              />
             </td>
           </tr>
         ))}
