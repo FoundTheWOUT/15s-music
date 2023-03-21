@@ -23,7 +23,7 @@ export const cutAudio = async (
     }) as FFmpeg;
     await ffmpeg.load();
   }
-  const filename = generateFilename()
+  const filename = await generateFilename()
   ffmpeg.FS("writeFile", `${filename}-in.mp3`, await fetchFile(blob));
   await ffmpeg.run(
     "-i",
