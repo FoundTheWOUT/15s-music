@@ -10,11 +10,11 @@ function PlayAndPause({
   return (
     <div {...rest}>
       {paused ? (
-        <div className="icon btn">
+        <div className="icon">
           <PlayIcon className="translate-x-[1px] text-gray-500" />
         </div>
       ) : (
-        <div className="icon btn">
+        <div className="icon">
           <PauseIcon className="text-gray-500" />
         </div>
       )}

@@ -11,7 +11,7 @@ import {
 } from "react";
 import PlayAndPause from "./PlayAndPause";
 
-// WaveSurfer use self internal, we can't import here, otherwise causing server error.
+// WaveSurfer use 'self' internal, we can't import here, otherwise causing server error.
 // import WaveSurfer from "wavesurfer.js";
 // import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
 

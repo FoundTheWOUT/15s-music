@@ -8,6 +8,6 @@
   }
 
   .btn {
-    @apply cursor-pointer select-none rounded px-2 shadow active:shadow-inner;
+    @apply cursor-pointer select-none shadow active:shadow-inner;
   }
 }

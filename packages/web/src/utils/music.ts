@@ -1,5 +1,6 @@
 export type { Music } from "@15s-music/server/src/entry";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import { generateFilename } from ".";
 
 let ffmpeg: FFmpeg | null = null;
 const CDN = "https://cdn.staticfile.org/ffmpeg-core/0.11.0/";
@@ -22,19 +23,20 @@ export const cutAudio = async (
     }) as FFmpeg;
     await ffmpeg.load();
   }
-  ffmpeg.FS("writeFile", `${id}-in.mp3`, await fetchFile(blob));
+  const filename = generateFilename()
+  ffmpeg.FS("writeFile", `${filename}-in.mp3`, await fetchFile(blob));
   await ffmpeg.run(
     "-i",
-    `${id}-in.mp3`,
+    `${filename}-in.mp3`,
     "-codec:a",
     "libmp3lame",
     "-ss",
     start.toString(),
     "-to",
     end.toString(),
-    `${id}-out.mp3`
+    `${filename}-out.mp3`
   );
-  const data = ffmpeg.FS("readFile", `${id}-out.mp3`);
+  const data = ffmpeg.FS("readFile", `${filename}-out.mp3`);
   return new Blob([data.buffer], { type: "audio/mp3" });
 };
 
