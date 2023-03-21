@@ -5,13 +5,14 @@ import { Switch, Transition } from "@headlessui/react";
 import SwitchBtn from "./styled/Switch";
 import { useAtom } from "jotai";
 import { useState } from "react";
+import cn from "classnames";
 
-export default function AutoPlaySwitch() {
+export default function AutoPlaySwitch({ className }: { className?: string }) {
   const [autoPlay, setAutoPlay] = useAtom(autoPlayAtom);
   const [hover, setHover] = useState(false);
   return (
     <Switch.Group>
-      <div className="flex items-center gap-1">
+      <div className={cn("flex items-center gap-1", className)}>
         <Switch.Label className="relative">
           <span
             onMouseEnter={() => setHover(true)}
@@ -21,7 +22,7 @@ export default function AutoPlaySwitch() {
             自动播放
           </span>
           <Transition
-            className="absolute -left-16 mt-2 w-48 rounded-xl border bg-white p-2 text-sm shadow-xl"
+            className="absolute -left-16 z-10 mt-2 w-48 rounded-xl border bg-white p-2 text-sm shadow-xl"
             show={hover}
             enter="transition-opacity"
             enterFrom="opacity-0"

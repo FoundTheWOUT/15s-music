@@ -33,17 +33,13 @@ export default function RootLayout({
 
           <div className="flex items-center">
             <Link href="/music/add">
-              <div className="btn flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 <span className="font-bold text-primary">上传音乐</span>
                 <PlusCircleIcon className="w-5 rounded-full text-primary " />
               </div>
             </Link>
-            {/* divider */}
             <div className="mx-2 h-3/5 w-[2px] bg-slate-200"></div>
             <Settings />
-            {/* <AutoPlaySwitch />
-            <div className="mx-2 h-3/5 w-[2px] bg-slate-200"></div>
-            <AutoPlayNextSwitch /> */}
           </div>
         </header>
 

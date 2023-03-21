@@ -128,7 +128,7 @@ function Music15sPlayer({ music, index }: { music: Music; index: number }) {
   return (
     <div
       className={cn(
-        "group/music relative aspect-square  select-none overflow-hidden rounded-xl shadow-xl",
+        "group/music relative aspect-square  select-none overflow-hidden rounded-xl shadow-xl shadow-primary/10",
         !paused && "scale-[var(--amplitude)] transition-[scale]"
       )}
       onMouseEnter={handleMouseEnter}
