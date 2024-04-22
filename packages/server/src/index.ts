@@ -7,8 +7,7 @@ import morgan from "morgan";
 import cors from "cors";
 import { ENABLE_HTTPS, ENABLE_OSS, isProd, VERSION } from "./const";
 import { log } from "./utils";
-import { musicRoute } from "./routes/music";
-import { getAppContext } from "./ctx";
+import { musicRoute, uploadRoute } from "./routes";
 import https from "https";
 import { readFileSync, createWriteStream } from "fs";
 import path from "path";
@@ -28,7 +27,6 @@ const accessLogStream = createWriteStream(
 
 async function bootstrap() {
   try {
-    const { ossClient } = await getAppContext();
     const app = express();
 
     app
@@ -52,7 +50,8 @@ async function bootstrap() {
         )
       )
       .use("/uploads", express.static("uploads"))
-      .use(await musicRoute());
+      .use(await musicRoute())
+      .use(await uploadRoute());
 
     app.get("/ping", (req, rep) => {
       return rep.end("pong");
